@@ -29,6 +29,10 @@ public:
         m_head = nullptr;
     }
 
+    bag(bag<Val> const& rhs){
+        *this = rhs;
+    }
+
     ~bag(){
         while(m_head){
             Node* temp = m_head;

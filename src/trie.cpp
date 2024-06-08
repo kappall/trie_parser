@@ -707,6 +707,11 @@ typename trie<T>::const_node_iterator trie<T>::root() const{
 }
 
 template <typename T>
+trie<T> const& trie<T>::const_leaf_iterator::get_leaf() const{
+    return *m_ptr;
+}
+
+template <typename T>
 trie<T>& trie<T>::max(){
     int max = 0;
     trie<T>::leaf_iterator ret = begin();
