@@ -124,17 +124,15 @@ trie<T> ALBERO(std::istream& is){
 
 //implemntation of trie.hpp
 template <typename T>
-trie<T>::trie() : m_p(nullptr), m_l(nullptr), m_c(), m_w(0.0) {}
+trie<T>::trie() : m_p(nullptr), m_l(new T), m_c(), m_w(0.0) {}
 
 template <typename T>
-trie<T>::trie(double w) : m_p(nullptr), m_l(nullptr), m_c(), m_w(w) {}
+trie<T>::trie(double w) : m_p(nullptr), m_l(new T), m_c(), m_w(w) {}
 
 template <typename T>
 trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_c(rhs.m_c), m_w(rhs.m_w){
-    if(rhs.m_l)
-        m_l = new T(*(rhs.m_l));
-    else
-        m_l = nullptr;
+
+    m_l = new T(*(rhs.m_l));
 
     auto pc = m_c.m_head;
     while(pc){
@@ -153,14 +151,13 @@ trie<T>::trie(trie<T>&& rhs): m_p(nullptr), m_l(rhs.m_l), m_c(), m_w(rhs.m_w) {
         pc->trie->set_parent(this);
         pc = pc->next;
     }
-
+    rhs.m_l = nullptr;
 }
 
 
 template <typename T>
 trie<T>::~trie(){
-    if(m_l)
-        delete m_l;
+    delete m_l;
 }//automatically calls all destructors
 
 template <typename T>
@@ -743,13 +740,16 @@ template <typename T>
 trie<T>& trie<T>::operator[](std::vector<T> const& v){
     trie<T>* ret = this;
     if(get_children().m_head && v.size()>0){
-        int i = 0;
-        for(auto it = get_children().begin(); it!= get_children().end() && i<v.size();){
+        bool found = false;
+        size_t i = 0;
+        auto it = get_children().begin();
+        while(!found && it != get_children().end() && i<v.size() ){
             if(*(it->get_label())==v[i]) {
                 ret = it.get_trie();
                 if(it->get_children().m_head){
                     it = it->get_children().begin();
-                }
+                }else
+                    found = true;
                 i++;
             }else
                 ++it;
@@ -761,13 +761,16 @@ template <typename T>
 trie<T> const& trie<T>::operator[](std::vector<T> const& v) const{
     const trie<T>* ret = this;
     if(get_children().m_head && v.size()>0){
-        int i = 0;
-        for(auto it = get_children().begin(); it!= nullptr && i<v.size();){
+        bool found = false;
+        size_t i = 0;
+        auto it = get_children().begin();
+        while(!found && it != get_children().end() && i<v.size() ){
             if(*(it->get_label())==v[i]) {
                 ret = it.get_trie();
                 if(it->get_children().m_head){
                     it = it->get_children().begin();
-                }
+                }else
+                    found = true;
                 i++;
             }else
                 ++it;
