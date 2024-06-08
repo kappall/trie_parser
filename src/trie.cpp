@@ -282,11 +282,11 @@ void trie<T>::add_child(trie<T> const& c){
             if (*(new_child->m_l) == *(m_c.m_head->trie->m_l))
                 throw parser_exception("It is not possible for 2 children with the same father to have the same label");
             auto pc = m_c.m_head;
-            while (pc->next != nullptr && *(pc->next->trie->m_l) > *(new_child->m_l)) {
-                if (*(pc->next->trie->m_l) == *(new_child->m_l))
+            while (pc->next != nullptr && *(pc->next->trie->m_l) < *(new_child->m_l)) {
+                pc = pc->next;
+                if (pc->next && *(pc->next->trie->m_l) == *(new_child->m_l))
                     throw parser_exception(
                             "It is not possible for 2 children with the same father to have the same label");
-                pc = pc->next;
             }
             pc->next = m_c.add_node(new_child, pc->next);
         }
@@ -369,7 +369,7 @@ typename trie<T>::node_iterator& trie<T>::node_iterator::operator++() {
 }
 
 template <typename T>
-typename trie<T>::node_iterator trie<T>::node_iterator::operator++(int d) {
+typename trie<T>::node_iterator trie<T>::node_iterator::operator++(int dummy) {
     auto ptr = m_ptr;
     if(m_ptr->m_p)
         m_ptr = m_ptr->m_p;
@@ -493,12 +493,12 @@ typename trie<T>::leaf_iterator& trie<T>::leaf_iterator::operator++(){
             m_ptr = pc->next->trie;
         }
         else {
-            if(m_ptr->m_p) {//if it is not root
+            if(m_ptr->m_p->m_p) {//if father is not root
                 m_ptr = m_ptr->m_p;
                 ++(*this);
             }else
                 m_ptr = nullptr;
-        }if(m_ptr) {//this is the case m_ptr was the root and now nullptr
+        }if(m_ptr && m_ptr->get_children().m_head) {//if it is not a leaf
             while (m_ptr->get_children().m_head) {
                 m_ptr = m_ptr->get_children().m_head->trie;
             }
@@ -512,23 +512,26 @@ typename trie<T>::leaf_iterator& trie<T>::leaf_iterator::operator++(){
 template <typename T>
 typename trie<T>::leaf_iterator trie<T>::leaf_iterator::operator++(int dummy){
     auto temp = m_ptr;
-    if(m_ptr) {
+    if(m_ptr && m_ptr->m_p) {//checking if m_ptr is pointing to nullpre or to the root
         auto pc = m_ptr->m_p->m_c.m_head;
         while (pc && pc->trie != m_ptr)
             pc = pc->next;
         if (pc && pc->next) {
             m_ptr = pc->next->trie;
-        } else {
-            auto g_parent = m_ptr->m_p->m_p;
-            if (g_parent) {
+        }
+        else {
+            if(m_ptr->m_p->m_p) {//if father is not root
                 m_ptr = m_ptr->m_p;
-                m_ptr++;
+                ++(*this);
             }else
                 m_ptr = nullptr;
+        }if(m_ptr && m_ptr->get_children().m_head) {//if it is not a leaf
+            while (m_ptr->get_children().m_head) {
+                m_ptr = m_ptr->get_children().m_head->trie;
+            }
         }
-        while (m_ptr->get_children().m_head){
-            m_ptr = m_ptr->get_children().m_head->trie;
-        }
+    } else{//in case m_ptr was pointing to the root
+        m_ptr = nullptr;
     }
     return temp;
 }
@@ -608,28 +611,26 @@ typename trie<T>::const_leaf_iterator::pointer trie<T>::const_leaf_iterator::ope
 
 template <typename T>
 typename trie<T>::const_leaf_iterator& trie<T>::const_leaf_iterator::operator++(){
-    if(m_ptr) {
-        if (m_ptr->m_w != 0.0) {
-            if (m_ptr->m_p) {
-                auto pc = m_ptr->m_p->m_c.m_head;
-                while (pc && pc->trie != m_ptr)
-                    pc = pc->next;
-                if (pc && pc->next) {
-                    m_ptr = pc->next->trie;
-                } else {
-                    auto g_parent = m_ptr->m_p->m_p;
-                    if (g_parent) {
-                        m_ptr = m_ptr->m_p;
-                        m_ptr++;
-                    }
-                }
-
-            } else
-                m_ptr = nullptr;
-        } else {
-            while (m_ptr->m_w == 0.0)
-                m_ptr = m_ptr->m_c.m_head->trie;
+    if(m_ptr && m_ptr->m_p) {//checking if m_ptr is pointing to nullpre or to the root
+        auto pc = m_ptr->m_p->m_c.m_head;
+        while (pc && pc->trie != m_ptr)
+            pc = pc->next;
+        if (pc && pc->next) {
+            m_ptr = pc->next->trie;
         }
+        else {
+            if(m_ptr->m_p->m_p) {//if father is not root
+                m_ptr = m_ptr->m_p;
+                ++(*this);
+            }else
+                m_ptr = nullptr;
+        }if(m_ptr && m_ptr->get_children().m_head) {//if it is not a leaf
+            while (m_ptr->get_children().m_head) {
+                m_ptr = m_ptr->get_children().m_head->trie;
+            }
+        }
+    } else{//in case m_ptr was pointing to the root
+        m_ptr = nullptr;
     }
     return *this;
 }
@@ -637,28 +638,26 @@ typename trie<T>::const_leaf_iterator& trie<T>::const_leaf_iterator::operator++(
 template <typename T>
 typename trie<T>::const_leaf_iterator trie<T>::const_leaf_iterator::operator++(int dummy){
     auto temp = m_ptr;
-    if(m_ptr) {
-        if (m_ptr->m_w != 0.0) {
-            if (m_ptr->m_p) {
-                auto pc = m_ptr->m_p->m_c.m_head;
-                while (pc && pc->trie != m_ptr)
-                    pc = pc->next;
-                if (pc && pc->next) {
-                    m_ptr = pc->next->trie;
-                } else {
-                    auto g_parent = m_ptr->m_p->m_p;
-                    if (g_parent) {
-                        m_ptr = m_ptr->m_p;
-                        m_ptr++;
-                    }
-                }
-
-            } else
-                m_ptr = nullptr;
-        } else {
-            while (m_ptr->m_w == 0.0)
-                m_ptr = m_ptr->m_c.m_head->trie;
+    if(m_ptr && m_ptr->m_p) {//checking if m_ptr is pointing to nullpre or to the root
+        auto pc = m_ptr->m_p->m_c.m_head;
+        while (pc && pc->trie != m_ptr)
+            pc = pc->next;
+        if (pc && pc->next) {
+            m_ptr = pc->next->trie;
         }
+        else {
+            if(m_ptr->m_p->m_p) {//if father is not root
+                m_ptr = m_ptr->m_p;
+                ++(*this);
+            }else
+                m_ptr = nullptr;
+        }if(m_ptr && m_ptr->get_children().m_head) {//if it is not a leaf
+            while (m_ptr->get_children().m_head) {
+                m_ptr = m_ptr->get_children().m_head->trie;
+            }
+        }
+    } else{//in case m_ptr was pointing to the root
+        m_ptr = nullptr;
     }
     return temp;
 }
@@ -709,7 +708,7 @@ typename trie<T>::const_node_iterator trie<T>::root() const{
 
 template <typename T>
 trie<T>& trie<T>::max(){
-    int max;
+    int max = 0;
     trie<T>::leaf_iterator ret = begin();
     for(trie<T>::leaf_iterator it = begin(); it!= end(); ++it){
         if(it.get_leaf().get_weight()>max){
@@ -721,7 +720,7 @@ trie<T>& trie<T>::max(){
 }
 template <typename T>
 trie<T> const& trie<T>::max() const{
-    int max;
+    int max = 0;
     trie<T>::const_leaf_iterator ret = begin();
     for(trie<T>::const_leaf_iterator it = begin(); it!= end(); ++it){
         if(it.get_leaf().get_weight()>max){
@@ -738,10 +737,10 @@ trie<T>& trie<T>::operator[](std::vector<T> const& v){
     if(get_children().m_head && v.size()>0){
         int i = 0;
         for(auto it = get_children().begin(); it!= get_children().end() && i<v.size();){
-            if(*((*it)->get_label())==v[i]) {
-                ret = *(it);
-                if((*it)->get_children().m_head){
-                    it = (*it)->get_children().begin();
+            if(*(it->get_label())==v[i]) {
+                ret = it.get_trie();
+                if(it->get_children().m_head){
+                    it = it->get_children().begin();
                 }
                 i++;
             }else
@@ -752,14 +751,14 @@ trie<T>& trie<T>::operator[](std::vector<T> const& v){
 }
 template <typename T>
 trie<T> const& trie<T>::operator[](std::vector<T> const& v) const{
-    trie<T>* const ret = this;
+    const trie<T>* ret = this;
     if(get_children().m_head && v.size()>0){
         int i = 0;
         for(auto it = get_children().begin(); it!= nullptr && i<v.size();){
-            if(*((*it)->get_label())==v[i]) {
-                ret = *(it);
-                if((*it)->get_children().m_head){
-                    it = (*it)->get_children().begin();
+            if(*(it->get_label())==v[i]) {
+                ret = it.get_trie();
+                if(it->get_children().m_head){
+                    it = it->get_children().begin();
                 }
                 i++;
             }else

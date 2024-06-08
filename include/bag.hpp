@@ -7,7 +7,7 @@ public:
     {
         Val* trie;
         Node* next;
-        Node() : trie(nullptr), next(nullptr){}
+
         Node(Val* trie, Node* next) : trie(trie), next(next){}
 
         Node(Val const& tr) : trie(new Val(tr)), next(nullptr){}
@@ -70,9 +70,9 @@ public:
         if(*this!=rhs){
             //free this
             while(m_head){
-                Node* temp = m_head->next;
-                delete m_head;
-                m_head = temp;
+                Node* temp = m_head;
+                m_head = m_head->next;
+                delete temp;
             }
 
             if(rhs.m_head){
@@ -96,18 +96,18 @@ public:
     }
     struct bag_iterator {
         using iterator_category = std::forward_iterator_tag;
-        using value_type = Val*;
-        using pointer = Val;
-        using reference = Val*;
+        using value_type = Val;
+        using pointer = Val*;
+        using reference = Val&;
 
         bag_iterator(Node* ptr){
             m_ptr = ptr;
         }
         reference operator*() {
-            return m_ptr->trie;
+            return *(m_ptr->trie);
         }
         pointer operator->() {
-            return *(m_ptr->trie);
+            return m_ptr->trie;
         }
         bag_iterator& operator++(){
             m_ptr = m_ptr->next;
@@ -139,21 +139,21 @@ public:
     bag_iterator end(){
         return nullptr;
     }
-/*
+
     struct const_bag_iterator {
         using iterator_category = std::forward_iterator_tag;
-        using value_type = Val const*;
+        using value_type = Val const;
         using pointer = Val const*;
-        using reference = Val* const;
+        using reference = Val const&;
 
         const_bag_iterator(Node* const ptr){
             m_ptr = ptr;
         }
         reference operator*() const{
-            return m_ptr->trie;
+            return *(m_ptr->trie);
         }
         pointer operator->() const{
-            return &(m_ptr->trie);
+            return m_ptr->trie;
         }
         const_bag_iterator& operator++() {
             m_ptr = m_ptr->next;
@@ -165,6 +165,9 @@ public:
         bool operator!=(const_bag_iterator const& rhs) const{
             return m_ptr != rhs.m_ptr;
         }
+        const Val* get_trie(){
+            return m_ptr->trie;
+        }
 
     private:
         Node* m_ptr;
@@ -175,6 +178,5 @@ public:
     }
     const_bag_iterator const end() const{
         return nullptr;
-    }*/
-
+    }
 };
