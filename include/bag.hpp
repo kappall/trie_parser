@@ -8,6 +8,7 @@ public:
         Val* trie;
         Node* next;
 
+        Node() : trie(nullptr), next(nullptr){}
         Node(Val* trie, Node* next) : trie(trie), next(next){}
 
         Node(Val const& tr) : trie(new Val(tr)), next(nullptr){}
@@ -30,7 +31,20 @@ public:
     }
 
     bag(bag<Val> const& rhs){
-        *this = rhs;
+        if(rhs.m_head) {
+            m_head = new Node(new Val(*(rhs.m_head->trie)), nullptr);
+            Node* pc_r = rhs.m_head->next;
+            Node* pc = m_head;
+            while(pc_r){
+
+                pc->next = new Node;
+                pc = pc->next;
+                pc->trie = new Val(*(pc_r->trie));
+                pc->next = nullptr;
+                pc_r = pc_r->next;
+            }
+        }else
+            m_head = nullptr;
     }
 
     ~bag(){
@@ -42,7 +56,7 @@ public:
     }
 
     void bag_prepend(Val* trie){
-        Node* new_node = new Node(trie,m_head);
+        Node* new_node = new Node(trie, m_head);
         m_head = new_node;
     }
 
@@ -52,12 +66,14 @@ public:
             ret = true;
         else if((m_head != nullptr && rhs.m_head == nullptr) || (m_head== nullptr && rhs.m_head != nullptr))
             ret = false;
-        Node* it = m_head;
-        Node* r_it = rhs.m_head;
-        while(ret && it && r_it){
-            ret = (*it == *r_it);
-            it++;
-            r_it++;
+        else {
+            const_bag_iterator it = begin();
+            const_bag_iterator r_it = rhs.begin();
+            while (ret && it!=end() && r_it!=rhs.end()) {
+                ret = (*it == *r_it);
+                ++it;
+                ++r_it;
+            }
         }
         return ret;
     }

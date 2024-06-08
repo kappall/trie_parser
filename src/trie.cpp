@@ -130,14 +130,12 @@ template <typename T>
 trie<T>::trie(double w) : m_p(nullptr), m_l(nullptr), m_c(), m_w(w) {}
 
 template <typename T>
-trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_c(), m_w(rhs.m_w){
+trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_c(rhs.m_c), m_w(rhs.m_w){
     if(rhs.m_l)
         m_l = new T(*(rhs.m_l));
     else
         m_l = nullptr;
 
-
-    m_c = rhs.m_c;
     auto pc = m_c.m_head;
     while(pc){
         pc->trie->set_parent(this);
@@ -262,7 +260,12 @@ bag<trie<T>>& trie<T>::get_children(){
 }
 template <typename T>
 bool trie<T>::operator==(trie<T> const& rhs) const{
-    return *m_l == *(rhs.m_l) && m_c == rhs.m_c;
+    if(m_l && rhs.m_l)
+        return *m_l == *(rhs.m_l) && m_c == rhs.m_c;
+    else if(!m_l && !rhs.m_l)
+        return m_c == rhs.m_c;
+    else
+        return false;
 }
 
 template <typename T>
