@@ -314,7 +314,7 @@ std::ostream& operator<<(std::ostream& os, trie<T> const& t){
             if (!(*it)->get_children().m_head) {
                 os << (*it)->get_weight() << "children={}";
             } else {
-                std::cout << *(*it);
+                os << *(*it);
             }
             if (++it != t.get_children().end())
                 os << ",";
