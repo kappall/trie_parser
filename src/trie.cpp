@@ -76,7 +76,7 @@ trie<T> CHILD(std::istream& is){
    }else {
        child = ALBERO<T>(is);
    }
-    child.set_label(new T(label));
+    child.set_label( &label);
 
 
    return child;
