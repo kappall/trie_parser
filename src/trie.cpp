@@ -89,50 +89,57 @@ trie<T> ALBERO(std::istream& is){
 
 
    trie<T> t;
-   std::string s("");
-   is >> s;
-   if(s!="children") {
-       s = "expecting keyword \"children\" instead of \"" + s +"\"";
-       throw parser_exception(s);
-   }
-   skip_blank_spaces(is);
 
-   char c = '0';
-   is >> c;
-   if(c!='=') throw parser_exception("expecting symbol '='");
-   skip_blank_spaces(is);
+   char c= is.peek();
 
-   is >> c;
-   if(c!='{') throw parser_exception("expecting symbol '{'");
-   skip_blank_spaces(is);
-   c = is.peek();
-   bool in = false;
-   while(c!='}'){
-       in = true;
-       t.add_child(CHILD<T>(is));
+   if(c=='-'|| (c>='0' && c<='9')){//ii's a root or a node with label type number
+       t = LEAF<T>(is);
+   }else {
+       std::string s = "";
+       is >> s;
+       if (s != "children") {
+           s = "expecting keyword \"children\" instead of \"" + s + "\"";
+           throw parser_exception(s);
+       }
        skip_blank_spaces(is);
+
+       char c = '0';
        is >> c;
+       if (c != '=') throw parser_exception("expecting symbol '='");
+       skip_blank_spaces(is);
 
-       if(c!='}' && c!=',')  throw parser_exception("expecting symbol '}' or ','");
+       is >> c;
+       if (c != '{') throw parser_exception("expecting symbol '{'");
+       skip_blank_spaces(is);
+       c = is.peek();
+       bool in = false;
+       while (c != '}') {
+           in = true;
+           t.add_child(CHILD<T>(is));
+           skip_blank_spaces(is);
+           is >> c;
+
+           if (c != '}' && c != ',') throw parser_exception("expecting symbol '}' or ','");
+       }
+       if (!in)
+           throw parser_exception("expecting weight");
    }
-   if(!in)
-       throw parser_exception("expecting weight");
-
    return t;
 }
 
 
 //implemntation of trie.hpp
 template <typename T>
-trie<T>::trie() : m_p(nullptr), m_l(new T), m_c(), m_w(0.0) {}
+trie<T>::trie() : m_p(nullptr), m_l(nullptr), m_c(), m_w(0.0) {}
 
 template <typename T>
-trie<T>::trie(double w) : m_p(nullptr), m_l(new T), m_c(), m_w(w) {}
+trie<T>::trie(double w) : m_p(nullptr), m_l(nullptr), m_c(), m_w(w) {}
 
 template <typename T>
 trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_c(rhs.m_c), m_w(rhs.m_w){
 
-    m_l = new T(*(rhs.m_l));
+
+    set_label(rhs.m_l);
 
     auto pc = m_c.m_head;
     while(pc){
@@ -162,15 +169,11 @@ trie<T>::~trie(){
 
 template <typename T>
 trie<T>& trie<T>::operator=(trie<T> const& rhs){
-    if(this!=&rhs){
+    if(*this!=rhs){
         //no delete of m_p, it might have other children
         delete m_l;
-
-        m_p = nullptr;
-        if(rhs.m_l)
-            m_l = new T(*rhs.m_l);
-        else
-            m_l = nullptr;
+        set_label(rhs.m_l);
+        //m_p is not modified
         m_w = rhs.m_w;
 
         m_c = rhs.m_c;
@@ -189,7 +192,6 @@ trie<T>& trie<T>::operator=(trie<T>&& rhs){
     //no delete of m_p, it might have other children
     delete m_l;
 
-    m_p = nullptr;
     m_l = rhs.m_l;
     rhs.m_l= nullptr;
     m_w = rhs.m_w;
@@ -218,8 +220,10 @@ double trie<T>::get_weight() const {
 
 template <typename T>
 void trie<T>::set_label(T* l){
-    delete m_l;
-    m_l = l;
+    if(l)
+        m_l = new T(*l);
+    else
+        m_l = nullptr;
 }
 template <typename T>
 T const* trie<T>::get_label() const{
@@ -307,8 +311,8 @@ std::istream& operator>>(std::istream& is, trie<T>& t){
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, trie<T> const& t){
-    os << "children = { ";
     if(t.get_children().m_head) {
+        os << "children = { ";
         for (auto it = t.get_children().begin(); it != t.get_children().end(); ) {
             os << *(it->get_label())<< " ";
             if (!it->get_children().m_head) {
@@ -321,6 +325,8 @@ std::ostream& operator<<(std::ostream& os, trie<T> const& t){
                 os << ", ";
 
         }
+    }else{
+        os << t.get_weight() << " children = { ";
     }
     os << '}';
 
@@ -714,7 +720,7 @@ trie<T> const& trie<T>::const_leaf_iterator::get_leaf() const{
 
 template <typename T>
 trie<T>& trie<T>::max(){
-    int max = 0;
+    double max = 0;
     trie<T>::leaf_iterator ret = begin();
     for(trie<T>::leaf_iterator it = begin(); it!= end(); ++it){
         if(it.get_leaf().get_weight()>max){
@@ -726,7 +732,7 @@ trie<T>& trie<T>::max(){
 }
 template <typename T>
 trie<T> const& trie<T>::max() const{
-    int max = 0;
+    double max = 0;
     trie<T>::const_leaf_iterator ret = begin();
     for(trie<T>::const_leaf_iterator it = begin(); it!= end(); ++it){
         if(it.get_leaf().get_weight()>max){
