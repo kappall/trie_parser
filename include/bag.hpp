@@ -13,10 +13,6 @@ public:
 
         Node(Val const& tr) : trie(new Val(tr)), next(nullptr){}
 
-        ~Node(){
-            delete trie;
-        }
-
         bool operator==(Node const& rhs){
             return *(trie->get_label()) == *(rhs.trie->get_label());
         }
@@ -51,6 +47,7 @@ public:
         while(m_head){
             Node* temp = m_head;
             m_head = m_head->next;
+            delete temp->trie;
             delete temp;
         }
     }
@@ -92,6 +89,7 @@ public:
             while(m_head){
                 Node* temp = m_head;
                 m_head = m_head->next;
+                delete temp->trie;
                 delete temp;
             }
 
