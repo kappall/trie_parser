@@ -61,7 +61,7 @@ public:
         bool ret = true;
         if(m_head == nullptr && rhs.m_head == nullptr)
             ret = true;
-        else if((m_head != nullptr && rhs.m_head == nullptr) || (m_head== nullptr && rhs.m_head != nullptr))
+        else if((m_head != nullptr && rhs.m_head == nullptr) || (m_head == nullptr && rhs.m_head != nullptr))
             ret = false;
         else {
             const_bag_iterator it = begin();
@@ -151,7 +151,7 @@ public:
     };
 
 
-    bag_iterator const begin(){
+    bag_iterator begin(){
         return m_head;
     }
     bag_iterator end(){
@@ -173,10 +173,7 @@ public:
         pointer operator->() const{
             return m_ptr->trie;
         }
-        const_bag_iterator& operator++() {
-            m_ptr = m_ptr->next;
-            return *this;
-        }
+
         bool operator==(const_bag_iterator const& rhs) const{
             return m_ptr == rhs.m_ptr;
         }
@@ -186,15 +183,25 @@ public:
         const Val* get_trie(){
             return m_ptr->trie;
         }
+        const_bag_iterator& operator++(){
+            m_ptr = m_ptr->next;
+            return *this;
+        }
+        const_bag_iterator operator++(int dummy){
+            auto temp = m_ptr;
+            m_ptr = m_ptr->next;
+            return temp;
+        }
 
     private:
         Node* m_ptr;
     };
 
-    const_bag_iterator const begin() const{
+    const_bag_iterator begin() const{
         return m_head;
     }
-    const_bag_iterator const end() const{
+    const_bag_iterator end() const{
         return nullptr;
     }
+
 };

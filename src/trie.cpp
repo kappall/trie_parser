@@ -135,7 +135,7 @@ template <typename T>
 trie<T>::trie(double w) : m_p(nullptr), m_l(nullptr), m_c(), m_w(w) {}
 
 template <typename T>
-trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_c(rhs.m_c), m_w(rhs.m_w){
+trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_l(nullptr), m_c(rhs.m_c), m_w(rhs.m_w){
 
 
     set_label(rhs.m_l);
@@ -173,8 +173,11 @@ void trie<T>::set_weight(double w){
 }
 template <typename T>
 void trie<T>::set_label(T* l){
-    if(l)
+    if(l) {
+        if (m_l)
+            delete m_l;
         m_l = new T(*l);
+    }
     else
         m_l = nullptr;
 }
@@ -671,12 +674,29 @@ trie<T>& trie<T>::operator=(trie<T>&& rhs){
 
 template <typename T>
 bool trie<T>::operator==(trie<T> const& rhs) const{
-    if(m_l && rhs.m_l)
-        return *m_l == *(rhs.m_l) && m_c == rhs.m_c;
-    else if(!m_l && !rhs.m_l)
-        return m_c == rhs.m_c;
+    bool ret = false;
+    if(m_c.m_head && rhs.m_c.m_head){
+        ret = true;
+        auto it = m_c.begin();
+        while (ret && it != m_c.end()){
+            auto r_it = rhs.m_c.begin();
+            ret = false;
+            while (!ret && r_it!=rhs.m_c.end()){
+                if(*(it->get_label())==*(r_it->get_label())){
+                    ret = (*it == *r_it);
+                    ret = true;
+                }else
+                    ++r_it;
+            }
+            ++it;
+        }
+    }
+    else if((m_c.m_head && !rhs.m_c.m_head) || (!m_c.m_head && rhs.m_c.m_head))
+        ret = false;
     else
-        return false;
+        ret = rhs.m_w==m_w;
+
+    return ret;
 }
 
 template <typename T>
