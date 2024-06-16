@@ -321,7 +321,7 @@ trie<T>::leaf_iterator::leaf_iterator(trie<T>* ptr)  {
 
 template <typename T>
 typename trie<T>::leaf_iterator::reference trie<T>::leaf_iterator::operator*() const{
-    return m_ptr->get_label();
+    return *(m_ptr->m_l);
 }
 
 template <typename T>
@@ -425,7 +425,7 @@ trie<T>::const_leaf_iterator::const_leaf_iterator(trie<T> const* ptr) : m_ptr(pt
 
 template <typename T>
 typename trie<T>::const_leaf_iterator::reference trie<T>::const_leaf_iterator::operator*() const{
-    return *(m_ptr->get_label());
+    return *(m_ptr->m_l);
 }
 
 template <typename T>
@@ -732,4 +732,82 @@ template <typename T>
 std::istream& operator>>(std::istream& is, trie<T>& t){
     t = ALBERO<T>(is);
     return is;
+}
+
+//facultative operatoors
+template <typename T>
+trie<T> trie<T>::operator+(trie<T> const& rhs) const{
+    trie<T> ret = *this;
+    if(ret.m_c.m_head){
+        if(rhs.m_c.m_head) {
+            for (auto r_it : rhs.m_c) {
+                bool found = false;
+                auto it = ret.m_c.begin();
+                while (!found && it != ret.m_c.end()){
+                    if(*(it->get_label())==*(r_it.get_label())){
+                        found = true;
+                        *it+=r_it;
+                    }else
+                        ++it;
+                }
+                if(!found){
+                    ret.add_child(r_it);
+                }
+
+            }
+        }else{
+            for (auto it : ret.m_c) {
+                it+=rhs;
+            }
+        }
+    }else if(rhs.m_c.m_head){
+        for(auto r_it : rhs.m_c){
+            ret.add_child(r_it);
+        }
+    }else{
+        ret.m_w += rhs.m_w;
+    }
+
+    return ret;
+}
+
+template <typename T>
+trie<T>& trie<T>::operator+=(trie<T> const& rhs){
+    if(*this!=rhs){
+        if(m_c.m_head){
+            if(rhs.m_c.m_head) {
+                for (auto r_it: rhs.m_c) {
+                    bool found = false;
+                    auto it = m_c.begin();
+                    while (!found && it != m_c.end()){
+                        if(*(it->get_label())==*(r_it.get_label())){
+                            found = true;
+                            *it+=r_it;
+                        }else
+                            ++it;
+                    }
+                    if(!found){
+                        add_child(r_it);
+                    }
+
+                }
+            }else{
+                for (auto it : this->m_c) {
+                    it+=rhs;
+                }
+            }
+        }else if(rhs.m_c.m_head){
+            for(auto r_it : rhs.m_c){
+                add_child(r_it);
+            }
+        }else{
+            m_w += rhs.m_w;
+        }
+    }else{
+        for(auto it = begin(); it!=end(); ++it){
+            it.get_leaf().m_w*=2;
+
+        }
+    }
+    return *this;
 }
