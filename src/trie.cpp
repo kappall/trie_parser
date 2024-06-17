@@ -1,4 +1,4 @@
-//todo:  controlla getters e setters, operator<<, il problema è che un nodo viene scritto 2 volte, il tire è lo stesso ma con oggetti diversi
+//todo: capire perché non funzioni prefix iterator(da capire quale non funzioni)
 
 #include <iostream>
 #include "trie.hpp"
@@ -634,12 +634,9 @@ trie<T> const& trie<T>::operator[](std::vector<T> const& v) const{
 template <typename T>
 trie<T>& trie<T>::operator=(trie<T> const& rhs){
     if(*this!=rhs){
-        //no delete of m_p, it might have other children
-        delete m_l;
-        set_label(rhs.m_l);
-        //m_p is not modified
-        m_w = rhs.m_w;
+        //m_p and m_lis not modified
 
+        m_w = rhs.m_w;
         m_c = rhs.m_c;
         auto pc = m_c.m_head;
         while(pc){
@@ -654,13 +651,9 @@ trie<T>& trie<T>::operator=(trie<T> const& rhs){
 //operators
 template <typename T>
 trie<T>& trie<T>::operator=(trie<T>&& rhs){
-    //no delete of m_p, it might have other children
-    delete m_l;
+    //m_p and m_lis not modified
 
-    m_l = rhs.m_l;
-    rhs.m_l= nullptr;
     m_w = rhs.m_w;
-
     m_c.m_head = rhs.m_c.m_head;
     rhs.m_c.m_head = nullptr;
     auto pc = m_c.m_head;
@@ -701,7 +694,7 @@ bool trie<T>::operator==(trie<T> const& rhs) const{
 
 template <typename T>
 bool trie<T>::operator!=(trie<T> const& rhs) const{
-    return *m_l != *(rhs.m_l) || m_c != rhs.m_c;
+    return !(*this==rhs);
 }
 
 template <typename T>
@@ -789,10 +782,9 @@ trie<T>& trie<T>::operator+=(trie<T> const& rhs){
                     if(!found){
                         add_child(r_it);
                     }
-
                 }
             }else{
-                for (auto it : this->m_c) {
+                for (auto it : m_c) {
                     it+=rhs;
                 }
             }
