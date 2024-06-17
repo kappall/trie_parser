@@ -250,7 +250,7 @@ typename trie<T>::node_iterator& trie<T>::node_iterator::operator++() {
 }
 
 template <typename T>
-typename trie<T>::node_iterator trie<T>::node_iterator::operator++(int dummy) {
+typename trie<T>::node_iterator trie<T>::node_iterator::operator++(int) {
     auto ptr = m_ptr;
     if(m_ptr->m_p)
         m_ptr = m_ptr->m_p;
@@ -298,7 +298,7 @@ typename trie<T>::const_node_iterator& trie<T>::const_node_iterator::operator++(
 }
 
 template <typename T>
-typename trie<T>::const_node_iterator trie<T>::const_node_iterator::operator++(int dummy) {
+typename trie<T>::const_node_iterator trie<T>::const_node_iterator::operator++(int) {
     auto ptr = m_ptr;
     if(m_ptr->get_parent())
         m_ptr = m_ptr->get_parent();
@@ -356,7 +356,7 @@ typename trie<T>::leaf_iterator& trie<T>::leaf_iterator::operator++(){
 }
 
 template <typename T>
-typename trie<T>::leaf_iterator trie<T>::leaf_iterator::operator++(int dummy){
+typename trie<T>::leaf_iterator trie<T>::leaf_iterator::operator++(int){
     auto temp = m_ptr;
     if(m_ptr && m_ptr->m_p) {//checking if m_ptr is pointing to nullpre or to the root
         auto pc = m_ptr->m_p->m_c.m_head;
@@ -460,7 +460,7 @@ typename trie<T>::const_leaf_iterator& trie<T>::const_leaf_iterator::operator++(
 }
 
 template <typename T>
-typename trie<T>::const_leaf_iterator trie<T>::const_leaf_iterator::operator++(int dummy){
+typename trie<T>::const_leaf_iterator trie<T>::const_leaf_iterator::operator++(int){
     auto temp = m_ptr;
     if(m_ptr && m_ptr->m_p) {//checking if m_ptr is pointing to nullpre or to the root
         auto pc = m_ptr->m_p->m_c.m_head;

@@ -131,7 +131,7 @@ public:
             m_ptr = m_ptr->next;
             return *this;
         }
-        bag_iterator operator++(int dummy){
+        bag_iterator operator++(int){
             auto temp = m_ptr;
             m_ptr = m_ptr->next;
             return temp;
