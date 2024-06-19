@@ -671,17 +671,15 @@ bool trie<T>::operator==(trie<T> const& rhs) const{
     if(m_c.m_head && rhs.m_c.m_head){
         ret = true;
         auto it = m_c.begin();
-        while (ret && it != m_c.end()){
-            auto r_it = rhs.m_c.begin();
-            ret = false;
-            while (!ret && r_it!=rhs.m_c.end()){
+        auto r_it = rhs.m_c.begin();
+        while (ret && it != m_c.end() && r_it!=rhs.m_c.end()){
                 if(*(it->get_label())==*(r_it->get_label())){
                     ret = (*it == *r_it);
-                    ret = true;
-                }else
+                    ++it;
                     ++r_it;
-            }
-            ++it;
+                }else {
+                    ret = false;
+                }
         }
     }
     else if((m_c.m_head && !rhs.m_c.m_head) || (!m_c.m_head && rhs.m_c.m_head))
