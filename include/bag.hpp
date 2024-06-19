@@ -112,6 +112,29 @@ public:
         Node* new_n = new Node(new_child, next);
         return new_n;
     }
+
+    void delete_node(Val& n){
+        if(*(n.get_label())!=*(m_head->trie->get_label())) {
+            Node *pc = m_head;
+            while (pc->next && *(n.get_label())!=*(pc->next->trie->get_label())){
+                pc = pc->next;
+            }
+            if(pc->next){
+                Node* temp = pc->next;
+                pc->next = pc->next->next;
+                delete temp->trie;
+                delete temp;
+            }
+        }else{
+            Node* temp = m_head;
+            m_head = m_head->next;
+            delete temp->trie;
+            delete temp;
+        }
+
+    }
+
+
     struct bag_iterator {
         using iterator_category = std::forward_iterator_tag;
         using value_type = Val;
@@ -187,7 +210,7 @@ public:
             m_ptr = m_ptr->next;
             return *this;
         }
-        const_bag_iterator operator++(int dummy){
+        const_bag_iterator operator++(int){
             auto temp = m_ptr;
             m_ptr = m_ptr->next;
             return temp;

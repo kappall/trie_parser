@@ -88,9 +88,9 @@ trie<T> ALBERO(std::istream& is){
 
    trie<T> t;
 
-   char c= is.peek();
+   char i = is.peek();
 
-   if(c=='-'|| (c>='0' && c<='9')){//ii's a root or a node with label type number
+   if(i=='-'|| (i>='0' && i<='9')){//ii's a root or a node with label type number
        t = LEAF<T>(is);
    }else {
        std::string s = "";
@@ -802,4 +802,47 @@ trie<T>& trie<T>::operator+=(trie<T> const& rhs){
         }
     }
     return *this;
+}
+/*
+template <typename T>
+void trie<T>::path_compress(){
+
+    for(auto it = m_c.begin(); it!= m_c.end(); ++it){
+        int count = 0;
+        for(auto& c_it : (*it).m_c){
+            count++;
+            if(c_it.m_c.m_head)
+                (*it).path_compress();
+        }
+        if(count == 1){//only 1 child and father is not root
+            (*m_l)+=*((*it).m_c.m_head.trie->get_label());
+            delete (*it).m_c.m_head;
+            add_child(child);
+        }
+    }
+
+}*/
+template <typename T>
+void trie<T>::path_compress(){
+
+    for(auto it = m_c.begin(); it!=m_c.end(); ){
+        int children = 0;
+        if(it->m_c.m_head) {
+            if (!it->m_c.m_head->next)//only 1 child
+                children = 1;
+            else {
+                (*it).path_compress();
+            }
+        }
+        if(children==1){
+            trie<T> child(*((*it).m_c.m_head->trie));
+            T l = *((*it).m_l) + *(child.m_l);
+            child.set_label(&l);
+            auto temp = it;
+            ++it;
+            m_c.delete_node(*temp);
+            add_child(child);
+        }else
+            ++it;
+    }
 }
