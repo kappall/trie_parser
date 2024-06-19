@@ -766,62 +766,9 @@ trie<T> trie<T>::operator+(trie<T> const& rhs) const{
 
 template <typename T>
 trie<T>& trie<T>::operator+=(trie<T> const& rhs){
-    if(*this!=rhs){
-        if(m_c.m_head){
-            if(rhs.m_c.m_head) {
-                for (auto r_it: rhs.m_c) {
-                    bool found = false;
-                    auto it = m_c.begin();
-                    while (!found && it != m_c.end()){
-                        if(*(it->get_label())==*(r_it.get_label())){
-                            found = true;
-                            *it+=r_it;
-                        }else
-                            ++it;
-                    }
-                    if(!found){
-                        add_child(r_it);
-                    }
-                }
-            }else{
-                for (auto it : m_c) {
-                    it+=rhs;
-                }
-            }
-        }else if(rhs.m_c.m_head){
-            for(auto r_it : rhs.m_c){
-                add_child(r_it);
-            }
-        }else{
-            m_w += rhs.m_w;
-        }
-    }else{
-        for(auto it = begin(); it!=end(); ++it){
-            it.get_leaf().m_w*=2;
-
-        }
-    }
+    (*this) = (*this) + rhs;
     return *this;
 }
-/*
-template <typename T>
-void trie<T>::path_compress(){
-
-    for(auto it = m_c.begin(); it!= m_c.end(); ++it){
-        int count = 0;
-        for(auto& c_it : (*it).m_c){
-            count++;
-            if(c_it.m_c.m_head)
-                (*it).path_compress();
-        }
-        if(count == 1){//only 1 child and father is not root
-            (*m_l)+=*((*it).m_c.m_head.trie->get_label());
-            delete (*it).m_c.m_head;
-            add_child(child);
-        }
-    }
-
-}*/
 template <typename T>
 void trie<T>::path_compress(){
 
