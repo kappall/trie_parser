@@ -17,9 +17,9 @@ template <typename T>
 trie<T> LEAF(std::istream&);
 
 void skip_blank_spaces(std::istream& is) {
-   char c = 0;
-   is >> c;
-   is.putback(c);
+    char c = 0;
+    is >> c;
+    is.putback(c);
 }
 
 template <typename T>
@@ -44,7 +44,7 @@ trie<T> LEAF(std::istream& is){
     is >> c;
     if(c!='=') {
         throw parser_exception("expecting operand '='");
-        }
+    }
     skip_blank_spaces(is);
     is >> c;
     if(c!='{') throw parser_exception("expecting operand '{'");
@@ -58,71 +58,71 @@ trie<T> LEAF(std::istream& is){
 
 template <typename T>
 trie<T> CHILD(std::istream& is){
-   skip_blank_spaces(is);
+    skip_blank_spaces(is);
 
-   trie<T> child;
+    trie<T> child;
 
-   T label;
-   is >> label;
+    T label;
+    is >> label;
 
-   skip_blank_spaces(is);
-   //if i read a number than it's a leaf else it's a node(a sub-trie)
-   char c = is.peek();
-   if(c>='0' && c<= '9')//is a leaf
-   {
-       child = LEAF<T>(is);
-   }else {
-       child = ALBERO<T>(is);
-   }
+    skip_blank_spaces(is);
+    //if i read a number than it's a leaf else it's a node(a sub-trie)
+    char c = is.peek();
+    if(c>='0' && c<= '9')//is a leaf
+    {
+        child = LEAF<T>(is);
+    }else {
+        child = ALBERO<T>(is);
+    }
     child.set_label( &label);
 
 
-   return child;
+    return child;
 }
 
 
 template <typename T>
 trie<T> ALBERO(std::istream& is){
-   skip_blank_spaces(is);
+    skip_blank_spaces(is);
 
 
-   trie<T> t;
+    trie<T> t;
 
-   char i = is.peek();
+    char i = is.peek();
 
-   if(i=='-'|| (i>='0' && i<='9')){//ii's a root or a node with label type number
-       t = LEAF<T>(is);
-   }else {
-       std::string s = "";
-       is >> s;
-       if (s != "children") {
-           s = "expecting keyword \"children\" instead of \"" + s + "\"";
-           throw parser_exception(s);
-       }
-       skip_blank_spaces(is);
+    if(i=='-'|| (i>='0' && i<='9')){//ii's a root or a node with label type number
+        t = LEAF<T>(is);
+    }else {
+        std::string s = "";
+        is >> s;
+        if (s != "children") {
+            s = "expecting keyword \"children\" instead of \"" + s + "\"";
+            throw parser_exception(s);
+        }
+        skip_blank_spaces(is);
 
-       char c = '0';
-       is >> c;
-       if (c != '=') throw parser_exception("expecting symbol '='");
-       skip_blank_spaces(is);
+        char c = '0';
+        is >> c;
+        if (c != '=') throw parser_exception("expecting symbol '='");
+        skip_blank_spaces(is);
 
-       is >> c;
-       if (c != '{') throw parser_exception("expecting symbol '{'");
-       skip_blank_spaces(is);
-       c = is.peek();
-       bool in = false;
-       while (c != '}') {
-           in = true;
-           t.add_child(CHILD<T>(is));
-           skip_blank_spaces(is);
-           is >> c;
+        is >> c;
+        if (c != '{') throw parser_exception("expecting symbol '{'");
+        skip_blank_spaces(is);
+        c = is.peek();
+        bool in = false;
+        while (c != '}') {
+            in = true;
+            t.add_child(CHILD<T>(is));
+            skip_blank_spaces(is);
+            is >> c;
 
-           if (c != '}' && c != ',') throw parser_exception("expecting symbol '}' or ','");
-       }
-       if (!in)
-           throw parser_exception("expecting weight");
-   }
-   return t;
+            if (c != '}' && c != ',') throw parser_exception("expecting symbol '}' or ','");
+        }
+        if (!in)
+            throw parser_exception("expecting weight");
+    }
+    return t;
 }
 
 
@@ -142,7 +142,7 @@ trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_l(nullptr), m_c(rhs.m_c), m_
 
     auto pc = m_c.m_head;
     while(pc){
-        pc->trie.set_parent(this);
+        pc->trie->set_parent(this);
         pc = pc->next;
     }
 
@@ -154,7 +154,7 @@ trie<T>::trie(trie<T>&& rhs): m_p(nullptr), m_l(rhs.m_l), m_c(), m_w(rhs.m_w) {
     m_c.m_head = rhs.m_c.m_head;
     auto pc = m_c.m_head;
     while(pc){
-        pc->trie.set_parent(this);
+        pc->trie->set_parent(this);
         pc = pc->next;
     }
     rhs.m_l = nullptr;
@@ -333,10 +333,10 @@ template <typename T>
 typename trie<T>::leaf_iterator& trie<T>::leaf_iterator::operator++(){
     if(m_ptr && m_ptr->m_p) {//checking if m_ptr is pointing to nullpre or to the root
         auto pc = m_ptr->m_p->m_c.m_head;
-        while (pc && pc->trie != *m_ptr)
+        while (pc && pc->trie != m_ptr)
             pc = pc->next;
         if (pc && pc->next) {
-            m_ptr = &(pc->next->trie);
+            m_ptr = pc->next->trie;
         }
         else {
             if(m_ptr->m_p->m_p) {//if father is not root
@@ -346,7 +346,7 @@ typename trie<T>::leaf_iterator& trie<T>::leaf_iterator::operator++(){
                 m_ptr = nullptr;
         }if(m_ptr && m_ptr->get_children().m_head) {//if it is not a leaf
             while (m_ptr->get_children().m_head) {
-                m_ptr = &(m_ptr->get_children().m_head->trie);
+                m_ptr = m_ptr->get_children().m_head->trie;
             }
         }
     } else{//in case m_ptr was pointing to the root
@@ -396,10 +396,10 @@ bool trie<T>::leaf_iterator::operator!=(leaf_iterator const& rhs) const {
 template <typename T>
 typename trie<T>::leaf_iterator trie<T>::begin(){
     if(m_c.m_head) { //if there is any child
-        auto pc = m_c.m_head;//first child of this
-        while (pc->trie.m_c.m_head)
-            pc = pc->trie.m_c.m_head;//first child of pc
-        return &(pc->trie);
+        auto pc = m_c.m_head->trie;//first child of this
+        while (pc->m_c.m_head)
+            pc = pc->m_c.m_head->trie;//first child of pc
+        return pc;
     }else {
         return nullptr;
     }
@@ -539,28 +539,27 @@ trie<T> const& trie<T>::const_leaf_iterator::get_leaf() const{
 template <typename T>
 void trie<T>::add_child(trie<T> const& c){
 
-    auto node = m_c.create_node(c);
+    trie<T> *new_child = new trie<T>(c);
     if(m_c.m_head) {
-        if (*(c.m_l) < *(m_c.m_head->trie.m_l)) {//if i need to add it as the head
-            m_c.bag_prepend(node);
+        if (*(new_child->m_l) < *(m_c.m_head->trie->m_l)) {//if i need to add it as the head
+            m_c.bag_prepend(new_child);
         }else {
-            if (*(c.m_l) == *(m_c.m_head->trie.m_l))
+            if (*(new_child->m_l) == *(m_c.m_head->trie->m_l))
                 throw parser_exception("It is not possible for 2 children with the same father to have the same label");
             auto pc = m_c.m_head;
-            while (pc->next != nullptr && *(pc->next->trie.m_l) < *(c.m_l)) {
+            while (pc->next != nullptr && *(pc->next->trie->m_l) < *(new_child->m_l)) {
                 pc = pc->next;
-                if (pc->next && *(pc->next->trie.m_l) == *(c.m_l))
+                if (pc->next && *(pc->next->trie->m_l) == *(new_child->m_l))
                     throw parser_exception(
                             "It is not possible for 2 children with the same father to have the same label");
             }
-            node->next=pc->next;
-            pc->next = node;
+            pc->next = m_c.add_node(new_child, pc->next);
         }
     } else {
-        m_c.bag_prepend(node);
+        m_c.bag_prepend(new_child);
     }
-    node->trie.set_parent(this);
-    set_weight(0.0);//in case it was a leaf
+    new_child->set_parent(this);
+    (this)->set_weight(0.0);//in case it was a leaf
 }
 
 template <typename T>
@@ -598,7 +597,7 @@ trie<T>& trie<T>::operator[](std::vector<T> const& v){
         auto it = get_children().begin();
         while(!found && it != get_children().end() && i<v.size() ){
             if(*(it->get_label())==v[i]) {
-                ret = &(it.get_trie());
+                ret = it.get_trie();
                 i++;
                 if(i<v.size() && it->get_children().m_head){
                     it = it->get_children().begin();
@@ -641,7 +640,7 @@ trie<T>& trie<T>::operator=(trie<T> const& rhs){
         m_c = rhs.m_c;
         auto pc = m_c.m_head;
         while(pc){
-            pc->trie.set_parent(this);
+            pc->trie->set_parent(this);
             pc = pc->next;
         }
     }
@@ -659,7 +658,7 @@ trie<T>& trie<T>::operator=(trie<T>&& rhs){
     rhs.m_c.m_head = nullptr;
     auto pc = m_c.m_head;
     while(pc){
-        pc->trie.set_parent(this);
+        pc->trie->set_parent(this);
         pc = pc->next;
     }
 
@@ -674,13 +673,13 @@ bool trie<T>::operator==(trie<T> const& rhs) const{
         auto it = m_c.begin();
         auto r_it = rhs.m_c.begin();
         while (ret && it != m_c.end() && r_it!=rhs.m_c.end()){
-                if(*(it->get_label())==*(r_it->get_label())){
-                    ret = (*it == *r_it);
-                    ++it;
-                    ++r_it;
-                }else {
-                    ret = false;
-                }
+            if(*(it->get_label())==*(r_it->get_label())){
+                ret = (*it == *r_it);
+                ++it;
+                ++r_it;
+            }else {
+                ret = false;
+            }
         }
     }
     else if((m_c.m_head && !rhs.m_c.m_head) || (!m_c.m_head && rhs.m_c.m_head))
@@ -705,7 +704,7 @@ std::ostream& operator<<(std::ostream& os, trie<T> const& t){
             if (!it->get_children().m_head) {
                 os << it->get_weight() << " children = {}";
             } else {
-                const trie<T>& c = it.get_trie();
+                const trie<T>& c = *(it.get_trie());
                 os << c;
             }
             if (++it != t.get_children().end())
@@ -727,74 +726,39 @@ std::istream& operator>>(std::istream& is, trie<T>& t){
 }
 
 //facultative operatoors
-//template <typename T>
-//trie<T> trie<T>::operator+(trie<T> const& rhs) const{
-//    trie<T> ret = rhs;
-//    if(ret.m_c.m_head){
-//        if(m_c.m_head) {
-//            for (auto it : m_c) {
-//                bool found = false;
-//                auto r_it = ret.m_c.begin();
-//                while (!found && r_it != ret.m_c.end()){
-//                    if(*(it.get_label())==*(r_it->get_label())){
-//                        found = true;
-//                        *r_it+=it;
-//                    }else
-//                        ++r_it;
-//                }
-//                if(!found){
-//                    ret.add_child(it);
-//                }
-//
-//            }
-//        }else{
-//            for (auto it : ret.m_c) {
-//                it+=*this;
-//            }
-//        }
-//    }else if(m_c.m_head){
-//        for(auto r_it : m_c){
-//            ret.add_child(r_it);
-//        }
-//    }else{
-//        ret.m_w += m_w;
-//    }
-//
-//    return ret;
-//}
-
 template <typename T>
 trie<T> trie<T>::operator+(trie<T> const& rhs) const{
-    trie<T> ret;
-    auto t_it = m_c.begin();
-    auto r_it = rhs.m_c.begin();
-    if(t_it==m_c.end() && r_it==rhs.m_c.end()){
-        if(*m_l == *(rhs.m_l)) {
-            ret.m_w = m_w + rhs.m_w;
-            ret.m_l = new T(*m_l);
-        }
-    }else {
-        while (t_it != m_c.end() || r_it != rhs.m_c.end()) {
-            if (t_it != m_c.end() && r_it != rhs.m_c.end()) {
-                if (*(*t_it).m_l < *(*r_it).m_l) {
-                    ret.add_child(*t_it);
-                } else if (*(*t_it).m_l > *(*r_it).m_l) {
-                    ret.add_child(*r_it);
-                } else {
-                    //trie<T> child = *t_it + *r_it;
-                    ret.add_child(*t_it + *r_it);
+    trie<T> ret = *this;
+    if(ret.m_c.m_head){
+        if(rhs.m_c.m_head) {
+            for (auto r_it : rhs.m_c) {
+                bool found = false;
+                auto it = ret.m_c.begin();
+                while (!found && it != ret.m_c.end()){
+                    if(*(it->get_label())==*(r_it.get_label())){
+                        found = true;
+                        *it+=r_it;
+                    }else
+                        ++it;
                 }
-                ++r_it;
-                ++t_it;
-            } else if (t_it == m_c.end() && r_it != rhs.m_c.end()) {
-                ret.add_child(*r_it);
-                ++r_it;
-            } else if (t_it != m_c.end() && r_it == rhs.m_c.end()) {
-                ret.add_child(*t_it);
-                ++t_it;
+                if(!found){
+                    ret.add_child(r_it);
+                }
+
+            }
+        }else{
+            for (auto it : ret.m_c) {
+                it+=rhs;
             }
         }
+    }else if(rhs.m_c.m_head){
+        for(auto r_it : rhs.m_c){
+            ret.add_child(r_it);
+        }
+    }else{
+        ret.m_w += rhs.m_w;
     }
+
     return ret;
 }
 
