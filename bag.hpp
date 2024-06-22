@@ -1,23 +1,23 @@
-#include <iostream>
-
+//todo copiare i figli senza creare un padre per ogni figlio
 template <typename Val>
 class bag{
 public:
 
     struct Node
     {
-        Val trie;
+        Val* trie;
         Node* next;
 
-        Node() : trie(), next(nullptr){}
+        Node() : trie(nullptr), next(nullptr){}
+        Node(Val* trie, Node* next) : trie(trie), next(next){}
 
-        Node(Val const& tr) : trie(tr), next(nullptr){}
+        Node(Val const& tr) : trie(new Val(tr)), next(nullptr){}
 
         bool operator==(Node const& rhs){
-            return *(trie.get_label()) == *(rhs.trie.get_label());
+            return *(trie->get_label()) == *(rhs.trie->get_label());
         }
         bool operator!=(Node const& rhs){
-            return *(trie.get_label()) != *(rhs.trie.get_label());;
+            return !(*this == rhs);
         }
     };
     Node* m_head;
@@ -28,12 +28,15 @@ public:
 
     bag(bag<Val> const& rhs){
         if(rhs.m_head) {
-            m_head = new Node(rhs.m_head->trie);
+            m_head = new Node(new Val(*(rhs.m_head->trie)), nullptr);
             Node* pc_r = rhs.m_head->next;
             Node* pc = m_head;
             while(pc_r){
-                pc->next = new Node(pc_r->trie);
+
+                pc->next = new Node;
                 pc = pc->next;
+                pc->trie = new Val(*(pc_r->trie));
+                pc->next = nullptr;
                 pc_r = pc_r->next;
             }
         }else
@@ -44,12 +47,13 @@ public:
         while(m_head){
             Node* temp = m_head;
             m_head = m_head->next;
+            delete temp->trie;
             delete temp;
         }
     }
 
-    void bag_prepend(Node* new_node){
-        new_node->next = m_head;
+    void bag_prepend(Val* trie){
+        Node* new_node = new Node(trie, m_head);
         m_head = new_node;
     }
 
@@ -85,15 +89,16 @@ public:
             while(m_head){
                 Node* temp = m_head;
                 m_head = m_head->next;
+                delete temp->trie;
                 delete temp;
             }
 
             if(rhs.m_head){
-                m_head = new Node(rhs.m_head->trie);
+                m_head = new Node(*(rhs.m_head->trie));
                 Node* pc = m_head;
                 Node* pr = rhs.m_head->next;
                 while(pr){
-                    pc->next = new Node(pr->trie);
+                    pc->next = new Node(*(pr->trie));
                     pc = pc->next;
                     pr = pr->next;
                 }
@@ -103,25 +108,27 @@ public:
         }
         return *this;
     }
-    Node* create_node(Val const& new_child){
-        Node* new_n = new Node(new_child);
+    Node* add_node(Val* new_child, Node* next){
+        Node* new_n = new Node(new_child, next);
         return new_n;
     }
 
     void delete_node(Val& n){
-        if(*(n.get_label())!=*(m_head->trie.get_label())) {
+        if(*(n.get_label())!=*(m_head->trie->get_label())) {
             Node *pc = m_head;
-            while (pc->next && *(n.get_label())!=*(pc->next->trie.get_label())){
+            while (pc->next && *(n.get_label())!=*(pc->next->trie->get_label())){
                 pc = pc->next;
             }
             if(pc->next){
                 Node* temp = pc->next;
                 pc->next = pc->next->next;
+                delete temp->trie;
                 delete temp;
             }
         }else{
             Node* temp = m_head;
             m_head = m_head->next;
+            delete temp->trie;
             delete temp;
         }
 
@@ -138,10 +145,10 @@ public:
             m_ptr = ptr;
         }
         reference operator*() {
-            return m_ptr->trie;
+            return *(m_ptr->trie);
         }
         pointer operator->() {
-            return &(m_ptr->trie);
+            return m_ptr->trie;
         }
         bag_iterator& operator++(){
             m_ptr = m_ptr->next;
@@ -158,7 +165,7 @@ public:
         bool operator!=(bag_iterator const& rhs){
             return m_ptr != rhs.m_ptr;
         }
-        Val& get_trie(){
+        Val* get_trie(){
             return m_ptr->trie;
         }
 
@@ -184,10 +191,10 @@ public:
             m_ptr = ptr;
         }
         reference operator*() const{
-            return m_ptr->trie;
+            return *(m_ptr->trie);
         }
         pointer operator->() const{
-            return &(m_ptr->trie);
+            return m_ptr->trie;
         }
 
         bool operator==(const_bag_iterator const& rhs) const{
@@ -196,7 +203,7 @@ public:
         bool operator!=(const_bag_iterator const& rhs) const{
             return m_ptr != rhs.m_ptr;
         }
-        const Val& get_trie(){
+        const Val* get_trie(){
             return m_ptr->trie;
         }
         const_bag_iterator& operator++(){
