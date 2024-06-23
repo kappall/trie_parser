@@ -12,6 +12,9 @@ public:
         Node(Val* trie, Node* next) : trie(trie), next(next){}
 
         Node(Val const& tr) : trie(new Val(tr)), next(nullptr){}
+        ~Node(){
+            delete trie;
+        }
 
         bool operator==(Node const& rhs){
             return *(trie->get_label()) == *(rhs.trie->get_label());
@@ -26,28 +29,20 @@ public:
         m_head = nullptr;
     }
 
-    bag(bag<Val> const& rhs){
+    bag(bag<Val> const& rhs) : m_head(nullptr){
         if(rhs.m_head) {
-            m_head = new Node(new Val(*(rhs.m_head->trie)), nullptr);
-            Node* pc_r = rhs.m_head->next;
-            Node* pc = m_head;
-            while(pc_r){
-
-                pc->next = new Node;
+            Node* pc = rhs.m_head;
+            while(pc){
+                push_back(pc->trie);
                 pc = pc->next;
-                pc->trie = new Val(*(pc_r->trie));
-                pc->next = nullptr;
-                pc_r = pc_r->next;
             }
-        }else
-            m_head = nullptr;
+        }
     }
 
     ~bag(){
         while(m_head){
             Node* temp = m_head;
             m_head = m_head->next;
-            delete temp->trie;
             delete temp;
         }
     }
@@ -55,6 +50,20 @@ public:
     void bag_prepend(Val* trie){
         Node* new_node = new Node(trie, m_head);
         m_head = new_node;
+    }
+
+    void push_back(Val*& t){
+        Val* trie = new Val(*t);
+        Node* n = new Node(trie, nullptr);
+        if(!m_head)
+            m_head = n;
+        else {
+            Node* pc = m_head;
+            while (pc->next){
+               pc = pc->next;
+            }
+            pc->next = n;
+        }
     }
 
     bool operator==(bag<Val> const& rhs) const{
@@ -78,8 +87,16 @@ public:
         return !(*this == rhs);
     }
     bag<Val>& operator=(bag<Val>&& rhs){
-        m_head = rhs.m_head;
-        rhs.m_head = nullptr;
+        if(this!=&rhs) {
+            while(m_head){
+                Node* temp = m_head;
+                m_head = m_head->next;
+                delete temp;
+            }
+
+            m_head = rhs.m_head;
+            rhs.m_head = nullptr;
+        }
         return *this;
     }
 
@@ -89,7 +106,6 @@ public:
             while(m_head){
                 Node* temp = m_head;
                 m_head = m_head->next;
-                delete temp->trie;
                 delete temp;
             }
 
@@ -108,6 +124,7 @@ public:
         }
         return *this;
     }
+
     Node* add_node(Val* new_child, Node* next){
         Node* new_n = new Node(new_child, next);
         return new_n;
@@ -122,13 +139,11 @@ public:
             if(pc->next){
                 Node* temp = pc->next;
                 pc->next = pc->next->next;
-                delete temp->trie;
                 delete temp;
             }
         }else{
             Node* temp = m_head;
             m_head = m_head->next;
-            delete temp->trie;
             delete temp;
         }
 
