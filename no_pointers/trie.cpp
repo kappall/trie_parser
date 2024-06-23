@@ -333,12 +333,11 @@ template <typename T>
 typename trie<T>::leaf_iterator& trie<T>::leaf_iterator::operator++(){
     if(m_ptr && m_ptr->m_p) {//checking if m_ptr is pointing to nullpre or to the root
         auto pc = m_ptr->m_p->m_c.m_head;
-        while (pc && pc->trie != *m_ptr)
+        while (pc && &(pc->trie) != m_ptr)
             pc = pc->next;
-        if (pc && pc->next) {
+        if (pc->next) {
             m_ptr = &(pc->next->trie);
-        }
-        else {
+        }else {
             if(m_ptr->m_p->m_p) {//if father is not root
                 m_ptr = m_ptr->m_p;
                 ++(*this);
@@ -655,8 +654,7 @@ trie<T>& trie<T>::operator=(trie<T>&& rhs){
     //m_p and m_lis not modified
 
     m_w = rhs.m_w;
-    m_c.m_head = rhs.m_c.m_head;
-    rhs.m_c.m_head = nullptr;
+    m_c = rhs.m_c;
     auto pc = m_c.m_head;
     while(pc){
         pc->trie.set_parent(this);
@@ -765,36 +763,36 @@ std::istream& operator>>(std::istream& is, trie<T>& t){
 
 template <typename T>
 trie<T> trie<T>::operator+(trie<T> const& rhs) const{
-    trie<T> ret;
-    auto t_it = m_c.begin();
-    auto r_it = rhs.m_c.begin();
-    if(t_it==m_c.end() && r_it==rhs.m_c.end()){
-        if(*m_l == *(rhs.m_l)) {
-            ret.m_w = m_w + rhs.m_w;
-            ret.m_l = new T(*m_l);
-        }
-    }else {
-        while (t_it != m_c.end() || r_it != rhs.m_c.end()) {
-            if (t_it != m_c.end() && r_it != rhs.m_c.end()) {
-                if (*(*t_it).m_l < *(*r_it).m_l) {
-                    ret.add_child(*t_it);
-                } else if (*(*t_it).m_l > *(*r_it).m_l) {
-                    ret.add_child(*r_it);
-                } else {
-                    //trie<T> child = *t_it + *r_it;
-                    ret.add_child(*t_it + *r_it);
+    trie<T> ret = *this;
+    if(ret.m_c.m_head){
+        if(rhs.m_c.m_head) {
+            for (auto& r_it : rhs.m_c) {
+                bool found = false;
+                auto it = ret.m_c.begin();
+                while (!found && it != ret.m_c.end()){
+                    if(*(it->get_label())==*(r_it.get_label())){
+                        found = true;
+                        *it+=r_it;
+                    }else
+                        ++it;
                 }
-                ++r_it;
-                ++t_it;
-            } else if (t_it == m_c.end() && r_it != rhs.m_c.end()) {
-                ret.add_child(*r_it);
-                ++r_it;
-            } else if (t_it != m_c.end() && r_it == rhs.m_c.end()) {
-                ret.add_child(*t_it);
-                ++t_it;
+                if(!found){
+                    ret.add_child(r_it);
+                }
+            }
+        }else{
+            for (auto it : ret.m_c) {
+                it+=rhs;
             }
         }
+    }else if(rhs.m_c.m_head){
+        for(auto r_it : rhs.m_c){
+            ret.add_child(r_it);
+        }
+    }else{
+        ret.m_w += rhs.m_w;
     }
+
     return ret;
 }
 

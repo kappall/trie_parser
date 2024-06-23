@@ -26,18 +26,14 @@ public:
         m_head = nullptr;
     }
 
-    bag(bag<Val> const& rhs){
+    bag(bag<Val> const& rhs) : m_head(nullptr){
         if(rhs.m_head) {
-            m_head = new Node(rhs.m_head->trie);
-            Node* pc_r = rhs.m_head->next;
-            Node* pc = m_head;
-            while(pc_r){
-                pc->next = new Node(pc_r->trie);
+            Node* pc = rhs.m_head;
+            while(pc){
+                push_back(pc->trie);
                 pc = pc->next;
-                pc_r = pc_r->next;
             }
-        }else
-            m_head = nullptr;
+        }
     }
 
     ~bag(){
@@ -51,6 +47,18 @@ public:
     void bag_prepend(Node* new_node){
         new_node->next = m_head;
         m_head = new_node;
+    }
+    void push_back(Val const& t){//t è da copiare
+        Node* n = new Node(t);
+        if(!m_head)
+            m_head = n;
+        else {
+            Node* pc = m_head;
+            while (pc->next){
+                pc = pc->next;
+            }
+            pc->next = n;
+        }
     }
 
     bool operator==(bag<Val> const& rhs) const{
