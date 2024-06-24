@@ -436,10 +436,10 @@ template <typename T>
 typename trie<T>::const_leaf_iterator& trie<T>::const_leaf_iterator::operator++(){
     if(m_ptr && m_ptr->m_p) {//checking if m_ptr is pointing to nullpre or to the root
         auto pc = m_ptr->m_p->m_c.m_head;
-        while (pc && pc->trie != m_ptr)
+        while (pc && &(pc->trie) != m_ptr)
             pc = pc->next;
         if (pc && pc->next) {
-            m_ptr = pc->next->trie;
+            m_ptr = &(pc->next->trie);
         }
         else {
             if(m_ptr->m_p->m_p) {//if father is not root
@@ -449,7 +449,7 @@ typename trie<T>::const_leaf_iterator& trie<T>::const_leaf_iterator::operator++(
                 m_ptr = nullptr;
         }if(m_ptr && m_ptr->get_children().m_head) {//if it is not a leaf
             while (m_ptr->get_children().m_head) {
-                m_ptr = m_ptr->get_children().m_head->trie;
+                m_ptr = &(m_ptr->get_children().m_head->trie);
             }
         }
     } else{//in case m_ptr was pointing to the root
@@ -505,10 +505,10 @@ trie<T>::const_leaf_iterator::operator const_node_iterator() const{
 template <typename T>
 typename trie<T>::const_leaf_iterator trie<T>::begin() const{
     if(m_c.m_head) { //if there is any child
-        auto pc = m_c.m_head->trie;//first child of this
-        while (pc->m_c.m_head)
-            pc = pc->m_c.m_head->trie;//first child of pc
-        return pc;
+        auto pc = m_c.m_head;//first child of this
+        while (pc->trie.m_c.m_head)
+            pc = pc->trie.m_c.m_head;//first child of pc
+        return &(pc->trie);
     }else {
         return nullptr;
     }
@@ -654,7 +654,8 @@ trie<T>& trie<T>::operator=(trie<T>&& rhs){
     //m_p and m_lis not modified
 
     m_w = rhs.m_w;
-    m_c = rhs.m_c;
+    m_c.m_head = rhs.m_c.m_head;
+    rhs.m_c.m_head = nullptr;
     auto pc = m_c.m_head;
     while(pc){
         pc->trie.set_parent(this);
