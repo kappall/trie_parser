@@ -815,7 +815,7 @@ void trie<T>::path_compress(){
             }
         }
         if(children==1){
-            trie<T> child(*((*it).m_c.m_head->trie));
+            trie<T> child(((*it).m_c.m_head->trie));
             T l = *((*it).m_l) + *(child.m_l);
             child.set_label(&l);
             auto temp = it;
