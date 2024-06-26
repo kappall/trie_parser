@@ -152,12 +152,12 @@ template <typename T>
 trie<T>::trie(trie<T>&& rhs): m_p(nullptr), m_l(rhs.m_l), m_c(), m_w(rhs.m_w) {
 
     m_c.m_head = rhs.m_c.m_head;
+    rhs.m_c.m_head = nullptr;
     auto pc = m_c.m_head;
     while(pc){
         pc->trie.m_p = this;
         pc = pc->next;
     }
-    rhs.m_l = nullptr;
 }
 
 //distructor
@@ -654,8 +654,9 @@ trie<T>& trie<T>::operator=(trie<T>&& rhs){
     //m_p and m_lis not modified
 
     m_w = rhs.m_w;
+    auto temp = m_c.m_head;
     m_c.m_head = rhs.m_c.m_head;
-    rhs.m_c.m_head = nullptr;
+    rhs.m_c.m_head = temp;
     auto pc = m_c.m_head;
     while(pc){
         pc->trie.m_p = this;
