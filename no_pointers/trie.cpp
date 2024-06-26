@@ -142,7 +142,7 @@ trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_l(nullptr), m_c(rhs.m_c), m_
 
     auto pc = m_c.m_head;
     while(pc){
-        pc->trie.set_parent(this);
+        pc->trie.m_p = this;
         pc = pc->next;
     }
 
@@ -154,7 +154,7 @@ trie<T>::trie(trie<T>&& rhs): m_p(nullptr), m_l(rhs.m_l), m_c(), m_w(rhs.m_w) {
     m_c.m_head = rhs.m_c.m_head;
     auto pc = m_c.m_head;
     while(pc){
-        pc->trie.set_parent(this);
+        pc->trie.m_p = this;
         pc = pc->next;
     }
     rhs.m_l = nullptr;
@@ -292,16 +292,16 @@ typename trie<T>::const_node_iterator::pointer trie<T>::const_node_iterator::ope
 
 template <typename T>
 typename trie<T>::const_node_iterator& trie<T>::const_node_iterator::operator++() {
-    if(m_ptr->get_parent())
-        m_ptr = m_ptr->get_parent();
+    if(m_ptr->m_p)
+        m_ptr = m_ptr->m_p;
     return *this;
 }
 
 template <typename T>
 typename trie<T>::const_node_iterator trie<T>::const_node_iterator::operator++(int) {
     auto ptr = m_ptr;
-    if(m_ptr->get_parent())
-        m_ptr = m_ptr->get_parent();
+    if(m_ptr->m_p)
+        m_ptr = m_ptr->m_p;
     return ptr;
 }
 template <typename T>
@@ -343,9 +343,9 @@ typename trie<T>::leaf_iterator& trie<T>::leaf_iterator::operator++(){
                 ++(*this);
             }else
                 m_ptr = nullptr;
-        }if(m_ptr && m_ptr->get_children().m_head) {//if it is not a leaf
-            while (m_ptr->get_children().m_head) {
-                m_ptr = &(m_ptr->get_children().m_head->trie);
+        }if(m_ptr && m_ptr->m_c.m_head) {//if it is not a leaf
+            while (m_ptr->m_c.m_head) {
+                m_ptr = &(m_ptr->m_c.m_head->trie);
             }
         }
     } else{//in case m_ptr was pointing to the root
@@ -370,9 +370,9 @@ typename trie<T>::leaf_iterator trie<T>::leaf_iterator::operator++(int){
                 ++(*this);
             }else
                 m_ptr = nullptr;
-        }if(m_ptr && m_ptr->get_children().m_head) {//if it is not a leaf
-            while (m_ptr->get_children().m_head) {
-                m_ptr = m_ptr->get_children().m_head->trie;
+        }if(m_ptr && m_ptr->m_c.m_head) {//if it is not a leaf
+            while (m_ptr->m_c.m_head) {
+                m_ptr = m_ptr->m_c.m_head->trie;
             }
         }
     } else{//in case m_ptr was pointing to the root
@@ -447,9 +447,9 @@ typename trie<T>::const_leaf_iterator& trie<T>::const_leaf_iterator::operator++(
                 ++(*this);
             }else
                 m_ptr = nullptr;
-        }if(m_ptr && m_ptr->get_children().m_head) {//if it is not a leaf
-            while (m_ptr->get_children().m_head) {
-                m_ptr = &(m_ptr->get_children().m_head->trie);
+        }if(m_ptr && m_ptr->m_c.m_head) {//if it is not a leaf
+            while (m_ptr->m_c.m_head) {
+                m_ptr = &(m_ptr->m_c.m_head->trie);
             }
         }
     } else{//in case m_ptr was pointing to the root
@@ -474,9 +474,9 @@ typename trie<T>::const_leaf_iterator trie<T>::const_leaf_iterator::operator++(i
                 ++(*this);
             }else
                 m_ptr = nullptr;
-        }if(m_ptr && m_ptr->get_children().m_head) {//if it is not a leaf
-            while (m_ptr->get_children().m_head) {
-                m_ptr = m_ptr->get_children().m_head->trie;
+        }if(m_ptr && m_ptr->m_c.m_head) {//if it is not a leaf
+            while (m_ptr->m_c.m_head) {
+                m_ptr = m_ptr->m_c.m_head->trie;
             }
         }
     } else{//in case m_ptr was pointing to the root
@@ -558,8 +558,8 @@ void trie<T>::add_child(trie<T> const& c){
     } else {
         m_c.bag_prepend(node);
     }
-    node->trie.set_parent(this);
-    set_weight(0.0);//in case it was a leaf
+    node->trie.m_p = this;
+    m_w = 0.0;//in case it was a leaf
 }
 
 template <typename T>
@@ -567,8 +567,8 @@ trie<T>& trie<T>::max(){
     double max = 0;
     trie<T>::leaf_iterator ret = begin();
     for(trie<T>::leaf_iterator it = begin(); it!= end(); ++it){
-        if(it.get_leaf().get_weight()>max){
-            max = it.get_leaf().get_weight();
+        if(it.get_leaf().m_w>max){
+            max = it.get_leaf().m_w;
             ret = it;
         }
     }
@@ -580,8 +580,8 @@ trie<T> const& trie<T>::max() const{
     double max = 0;
     trie<T>::const_leaf_iterator ret = begin();
     for(trie<T>::const_leaf_iterator it = begin(); it!= end(); ++it){
-        if(it.get_leaf().get_weight()>max){
-            max = it.get_leaf().get_weight();
+        if(it.get_leaf().m_w>max){
+            max = it.get_leaf().m_w;
             ret = it;
         }
     }
@@ -591,16 +591,16 @@ trie<T> const& trie<T>::max() const{
 template <typename T>
 trie<T>& trie<T>::operator[](std::vector<T> const& v){
     trie<T>* ret = this;
-    if(get_children().m_head && v.size()>0){
+    if(m_c.m_head && v.size()>0){
         bool found = false;
         size_t i = 0;
-        auto it = get_children().begin();
-        while(!found && it != get_children().end() && i<v.size() ){
-            if(*(it->get_label())==v[i]) {
+        auto it = m_c.begin();
+        while(!found && it != m_c.end() && i<v.size() ){
+            if(*(it->m_l)==v[i]) {
                 ret = &(it.get_trie());
                 i++;
-                if(i<v.size() && it->get_children().m_head){
-                    it = it->get_children().begin();
+                if(i<v.size() && it->m_c.m_head){
+                    it = it->m_c.begin();
                 }else
                     found = true;
             }else
@@ -612,16 +612,16 @@ trie<T>& trie<T>::operator[](std::vector<T> const& v){
 template <typename T>
 trie<T> const& trie<T>::operator[](std::vector<T> const& v) const{
     const trie<T>* ret = this;
-    if(get_children().m_head && v.size()>0){
+    if(m_c.m_head && v.size()>0){
         bool found = false;
         size_t i = 0;
-        auto it = get_children().begin();
-        while(!found && it != get_children().end() && i<v.size() ){
-            if(*(it->get_label())==v[i]) {
+        auto it = m_c.begin();
+        while(!found && it != m_c.end() && i<v.size() ){
+            if(*(it->m_l)==v[i]) {
                 ret = it.get_trie();
                 i++;
-                if(it->get_children().m_head && i<v.size()){
-                    it = it->get_children().begin();
+                if(it->m_c.m_head && i<v.size()){
+                    it = it->m_c.begin();
                 }else
                     found = true;
             }else
@@ -640,7 +640,7 @@ trie<T>& trie<T>::operator=(trie<T> const& rhs){
         m_c = rhs.m_c;
         auto pc = m_c.m_head;
         while(pc){
-            pc->trie.set_parent(this);
+            pc->trie.m_p = this;
             pc = pc->next;
         }
     }
@@ -658,7 +658,7 @@ trie<T>& trie<T>::operator=(trie<T>&& rhs){
     rhs.m_c.m_head = nullptr;
     auto pc = m_c.m_head;
     while(pc){
-        pc->trie.set_parent(this);
+        pc->trie.m_p = this;
         pc = pc->next;
     }
 
@@ -673,7 +673,7 @@ bool trie<T>::operator==(trie<T> const& rhs) const{
         auto it = m_c.begin();
         auto r_it = rhs.m_c.begin();
         while (ret && it != m_c.end() && r_it!=rhs.m_c.end()){
-            if(*(it->get_label())==*(r_it->get_label())){
+            if(*(it->m_l)==*(r_it->m_l)){
                 ret = (*it == *r_it);
                 ++it;
                 ++r_it;
@@ -725,43 +725,6 @@ std::istream& operator>>(std::istream& is, trie<T>& t){
     return is;
 }
 
-//facultative operatoors
-//template <typename T>
-//trie<T> trie<T>::operator+(trie<T> const& rhs) const{
-//    trie<T> ret = rhs;
-//    if(ret.m_c.m_head){
-//        if(m_c.m_head) {
-//            for (auto it : m_c) {
-//                bool found = false;
-//                auto r_it = ret.m_c.begin();
-//                while (!found && r_it != ret.m_c.end()){
-//                    if(*(it.get_label())==*(r_it->get_label())){
-//                        found = true;
-//                        *r_it+=it;
-//                    }else
-//                        ++r_it;
-//                }
-//                if(!found){
-//                    ret.add_child(it);
-//                }
-//
-//            }
-//        }else{
-//            for (auto it : ret.m_c) {
-//                it+=*this;
-//            }
-//        }
-//    }else if(m_c.m_head){
-//        for(auto r_it : m_c){
-//            ret.add_child(r_it);
-//        }
-//    }else{
-//        ret.m_w += m_w;
-//    }
-//
-//    return ret;
-//}
-
 template <typename T>
 trie<T> trie<T>::operator+(trie<T> const& rhs) const{
     trie<T> ret = *this;
@@ -771,7 +734,7 @@ trie<T> trie<T>::operator+(trie<T> const& rhs) const{
                 bool found = false;
                 auto it = ret.m_c.begin();
                 while (!found && it != ret.m_c.end()){
-                    if(*(it->get_label())==*(r_it.get_label())){
+                    if(*(it->m_l)==*(r_it.m_l)){
                         found = true;
                         *it+=r_it;
                     }else

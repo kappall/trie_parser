@@ -142,7 +142,7 @@ trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_l(nullptr), m_c(rhs.m_c), m_
 
     auto pc = m_c.m_head;
     while(pc){
-        pc->trie->set_parent(this);
+        pc->trie->m_p = this;
         pc = pc->next;
     }
 
@@ -154,7 +154,7 @@ trie<T>::trie(trie<T>&& rhs): m_p(nullptr), m_l(rhs.m_l), m_c(), m_w(rhs.m_w) {
     m_c.m_head = rhs.m_c.m_head;
     auto pc = m_c.m_head;
     while(pc){
-        pc->trie->set_parent(this);
+        pc->trie->m_p = this;
         pc = pc->next;
     }
     rhs.m_l = nullptr;
@@ -292,16 +292,16 @@ typename trie<T>::const_node_iterator::pointer trie<T>::const_node_iterator::ope
 
 template <typename T>
 typename trie<T>::const_node_iterator& trie<T>::const_node_iterator::operator++() {
-    if(m_ptr->get_parent())
-        m_ptr = m_ptr->get_parent();
+    if(m_ptr->m_p)
+        m_ptr = m_ptr->m_p;
     return *this;
 }
 
 template <typename T>
 typename trie<T>::const_node_iterator trie<T>::const_node_iterator::operator++(int) {
     auto ptr = m_ptr;
-    if(m_ptr->get_parent())
-        m_ptr = m_ptr->get_parent();
+    if(m_ptr->m_p)
+        m_ptr = m_ptr->m_p;
     return ptr;
 }
 template <typename T>
@@ -344,7 +344,7 @@ typename trie<T>::leaf_iterator& trie<T>::leaf_iterator::operator++(){
                 ++(*this);
             }else
                 m_ptr = nullptr;
-        }if(m_ptr && m_ptr->get_children().m_head) {//if it is not a leaf
+        }if(m_ptr && m_ptr->m_c.m_head) {//if it is not a leaf
             leaf_iterator c = (*m_ptr).begin();
             m_ptr = c.m_ptr;
         }
@@ -369,7 +369,7 @@ typename trie<T>::leaf_iterator trie<T>::leaf_iterator::operator++(int){
                 ++(*this);
             }else
                 m_ptr = nullptr;
-        }if(m_ptr && m_ptr->get_children().m_head) {//if it is not a leaf
+        }if(m_ptr && m_ptr->m_c.m_head) {//if it is not a leaf
             leaf_iterator c = (*m_ptr).begin();
             m_ptr = c.m_ptr;
         }
@@ -445,7 +445,7 @@ typename trie<T>::const_leaf_iterator& trie<T>::const_leaf_iterator::operator++(
                 ++(*this);
             }else
                 m_ptr = nullptr;
-        }if(m_ptr && m_ptr->get_children().m_head) {//if it is not a leaf
+        }if(m_ptr && m_ptr->m_c.m_head) {//if it is not a leaf
             const_leaf_iterator c = (*m_ptr).begin();
             m_ptr = c.m_ptr;
         }
@@ -471,9 +471,9 @@ typename trie<T>::const_leaf_iterator trie<T>::const_leaf_iterator::operator++(i
                 ++(*this);
             }else
                 m_ptr = nullptr;
-        }if(m_ptr && m_ptr->get_children().m_head) {//if it is not a leaf
-            while (m_ptr->get_children().m_head) {
-                m_ptr = m_ptr->get_children().m_head->trie;
+        }if(m_ptr && m_ptr->m_c.m_head) {//if it is not a leaf
+            while (m_ptr->m_c.m_head) {
+                m_ptr = m_ptr->m_c.m_head->trie;
             }
         }
     } else{//in case m_ptr was pointing to the root
@@ -554,8 +554,8 @@ void trie<T>::add_child(trie<T> const& c){
     } else {
         m_c.bag_prepend(new_child);
     }
-    new_child->set_parent(this);
-    (this)->set_weight(0.0);//in case it was a leaf
+    new_child->m_p = this;
+    m_w = 0.0;//in case it was a leaf
 }
 
 template <typename T>
@@ -563,8 +563,8 @@ trie<T>& trie<T>::max(){
     double max = 0;
     trie<T>::leaf_iterator ret = begin();
     for(trie<T>::leaf_iterator it = begin(); it!= end(); ++it){
-        if(it.get_leaf().get_weight()>max){
-            max = it.get_leaf().get_weight();
+        if(it.get_leaf().m_w>max){
+            max = it.get_leaf().m_w;
             ret = it;
         }
     }
@@ -576,8 +576,8 @@ trie<T> const& trie<T>::max() const{
     double max = 0;
     trie<T>::const_leaf_iterator ret = begin();
     for(trie<T>::const_leaf_iterator it = begin(); it!= end(); ++it){
-        if(it.get_leaf().get_weight()>max){
-            max = it.get_leaf().get_weight();
+        if(it.get_leaf().m_w>max){
+            max = it.get_leaf().m_w;
             ret = it;
         }
     }
@@ -637,7 +637,7 @@ trie<T>& trie<T>::operator=(trie<T> const& rhs){
         m_c = rhs.m_c;
         auto pc = m_c.m_head;
         while(pc){
-            pc->trie->set_parent(this);
+            pc->trie->m_p = this;
             pc = pc->next;
         }
     }
@@ -655,7 +655,7 @@ trie<T>& trie<T>::operator=(trie<T>&& rhs){
 
     auto pc = m_c.m_head;
     while(pc){
-        pc->trie->set_parent(this);
+        pc->trie->m_p = this;
         pc = pc->next;
     }
 
@@ -670,7 +670,7 @@ bool trie<T>::operator==(trie<T> const& rhs) const{
         auto it = m_c.begin();
         auto r_it = rhs.m_c.begin();
         while (ret && it != m_c.end() && r_it!=rhs.m_c.end()){
-            if(*(it->get_label())==*(r_it->get_label())){
+            if(*(it->m_l)==*(r_it->m_l)){
                 ret = (*it == *r_it);
                 ++it;
                 ++r_it;
@@ -732,7 +732,7 @@ trie<T> trie<T>::operator+(trie<T> const& rhs) const{
                 bool found = false;
                 auto it = ret.m_c.begin();
                 while (!found && it != ret.m_c.end()){
-                    if(*(it->get_label())==*(r_it.get_label())){
+                    if(*(it->m_l)==*(r_it.m_l)){
                         found = true;
                         *it+=r_it;
                     }else
