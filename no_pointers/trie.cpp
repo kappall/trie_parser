@@ -504,13 +504,14 @@ trie<T>::const_leaf_iterator::operator const_node_iterator() const{
 
 template <typename T>
 typename trie<T>::const_leaf_iterator trie<T>::begin() const{
+    auto ret = this;
     if(m_c.m_head) { //if there is any child
         auto pc = m_c.m_head;//first child of this
         while (pc->trie.m_c.m_head)
             pc = pc->trie.m_c.m_head;//first child of pc
         return &(pc->trie);
     }else {
-        return nullptr;
+        return ret;
     }
 }
 template <typename T>
@@ -565,27 +566,35 @@ void trie<T>::add_child(trie<T> const& c){
 template <typename T>
 trie<T>& trie<T>::max(){
     double max = 0;
-    trie<T>::leaf_iterator ret = begin();
-    for(trie<T>::leaf_iterator it = begin(); it!= end(); ++it){
-        if(it.get_leaf().m_w>max){
-            max = it.get_leaf().m_w;
-            ret = it;
+    trie<T>* ret = this;
+    if(m_c.m_head) {
+        trie<T>::leaf_iterator r = begin();
+        for (trie<T>::leaf_iterator it = begin(); it != end(); ++it) {
+            if (it.get_leaf().m_w > max) {
+                max = it.get_leaf().m_w;
+                r = it;
+            }
         }
+        return r.get_leaf();
     }
-    return ret.get_leaf();
+    return *ret;
 }
 
 template <typename T>
 trie<T> const& trie<T>::max() const{
     double max = 0;
-    trie<T>::const_leaf_iterator ret = begin();
-    for(trie<T>::const_leaf_iterator it = begin(); it!= end(); ++it){
-        if(it.get_leaf().m_w>max){
-            max = it.get_leaf().m_w;
-            ret = it;
+    const trie<T>* ret = this;
+    if(m_c.m_head) {
+        trie<T>::const_leaf_iterator r = nullptr;
+        for (trie<T>::const_leaf_iterator it = begin(); it != end(); ++it) {
+            if (it.get_leaf().m_w > max) {
+                max = it.get_leaf().m_w;
+                r = it;
+            }
         }
+        return r.get_leaf();
     }
-    return ret.get_leaf();
+    return *ret;
 }
 
 template <typename T>
