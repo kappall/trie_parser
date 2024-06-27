@@ -463,10 +463,10 @@ typename trie<T>::const_leaf_iterator trie<T>::const_leaf_iterator::operator++(i
     auto temp = m_ptr;
     if(m_ptr && m_ptr->m_p) {//checking if m_ptr is pointing to nullpre or to the root
         auto pc = m_ptr->m_p->m_c.m_head;
-        while (pc && pc->trie != m_ptr)
+        while (pc && &(pc->trie) != m_ptr)
             pc = pc->next;
         if (pc && pc->next) {
-            m_ptr = pc->next->trie;
+            m_ptr = &(pc->next->trie);
         }
         else {
             if(m_ptr->m_p->m_p) {//if father is not root
@@ -476,7 +476,7 @@ typename trie<T>::const_leaf_iterator trie<T>::const_leaf_iterator::operator++(i
                 m_ptr = nullptr;
         }if(m_ptr && m_ptr->m_c.m_head) {//if it is not a leaf
             while (m_ptr->m_c.m_head) {
-                m_ptr = m_ptr->m_c.m_head->trie;
+                m_ptr = &(m_ptr->m_c.m_head->trie);
             }
         }
     } else{//in case m_ptr was pointing to the root
