@@ -267,13 +267,13 @@ bool trie<T>::node_iterator::operator!=(node_iterator const& rhs) const{
 
 template <typename T>
 typename trie<T>::node_iterator trie<T>::root(){
-    node_iterator n_it(this);
-    node_iterator previus(nullptr);
-    do {
-        previus = n_it;
-        n_it++;
-    }while(n_it != previus);
-    return n_it;
+    trie<T>* p = m_p;
+    node_iterator ret = this;
+    while(p){
+        ret = p;
+        p = p->m_p;
+    }
+    return ret;
 }
 
 //const node iterator
@@ -521,13 +521,13 @@ typename trie<T>::const_leaf_iterator trie<T>::end() const{
 
 template <typename T>
 typename trie<T>::const_node_iterator trie<T>::root() const{
-    const_node_iterator n_it(this);
-    const_node_iterator pr(this);
-    do {
-        pr = n_it;
-        n_it++;
-    }while(n_it != pr);
-    return n_it;
+    trie<T>* p = m_p;
+    const_node_iterator ret = this;
+    while(p){
+        ret = p;
+        p = p->m_p;
+    }
+    return ret;
 }
 
 template <typename T>
