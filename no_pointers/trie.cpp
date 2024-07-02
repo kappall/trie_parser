@@ -737,7 +737,7 @@ std::istream& operator>>(std::istream& is, trie<T>& t){
 template <typename T>
 trie<T> trie<T>::operator+(trie<T> const& rhs) const{
     trie<T> ret = *this;
-    if(ret.m_c.m_head){
+    if(m_c.m_head){
         if(rhs.m_c.m_head) {
             for (auto& r_it : rhs.m_c) {
                 bool found = false;
@@ -754,7 +754,7 @@ trie<T> trie<T>::operator+(trie<T> const& rhs) const{
                 }
             }
         }else{
-            for (auto it : ret.m_c) {
+            for (auto& it : ret.m_c) {
                 it+=rhs;
             }
         }
@@ -772,8 +772,10 @@ trie<T> trie<T>::operator+(trie<T> const& rhs) const{
 template <typename T>
 trie<T>& trie<T>::operator+=(trie<T> const& rhs){
     (*this) = (*this) + rhs;
+
     return *this;
 }
+
 template <typename T>
 void trie<T>::path_compress(){
 
