@@ -174,8 +174,7 @@ void trie<T>::set_weight(double w){
 template <typename T>
 void trie<T>::set_label(T* l){
     if(l) {
-        if (m_l)
-            delete m_l;
+        delete m_l;
         m_l = new T(*l);
     }
     else
@@ -626,7 +625,7 @@ trie<T> const& trie<T>::operator[](std::vector<T> const& v) const{
         auto it = m_c.begin();
         while(!found && it != m_c.end() && i<v.size() ){
             if(*(it->m_l)==v[i]) {
-                ret = it.get_trie();
+                ret = &(it.get_trie());
                 i++;
                 if(it->m_c.m_head && i<v.size()){
                     it = it->m_c.begin();
@@ -759,8 +758,9 @@ trie<T> trie<T>::operator+(trie<T> const& rhs) const{
             }
         }
     }else if(rhs.m_c.m_head){
-        for(auto r_it : rhs.m_c){
-            ret.add_child(r_it);
+        ret = rhs;
+        for(auto it = ret.begin() ; it != ret.end(); ++it){
+            (it).get_leaf().m_w += m_w;
         }
     }else{
         ret.m_w += rhs.m_w;
