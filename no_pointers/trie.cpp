@@ -137,9 +137,8 @@ trie<T>::trie(double w) : m_p(nullptr), m_l(nullptr), m_c(), m_w(w) {}
 template <typename T>
 trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_l(nullptr), m_c(rhs.m_c), m_w(rhs.m_w){
 
-
-    set_label(rhs.m_l);
-
+    if(rhs.m_l)
+        m_l = new T(*rhs.m_l);
     auto pc = m_c.m_head;
     while(pc){
         pc->trie.m_p = this;
