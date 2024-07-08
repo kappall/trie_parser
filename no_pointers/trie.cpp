@@ -265,12 +265,7 @@ bool trie<T>::node_iterator::operator!=(node_iterator const& rhs) const{
 
 template <typename T>
 typename trie<T>::node_iterator trie<T>::root(){
-    trie<T>* p = m_p;
     node_iterator ret = this;
-    while(p){
-        ret = p;
-        p = p->m_p;
-    }
     return ret;
 }
 
