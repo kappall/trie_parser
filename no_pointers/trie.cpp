@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include "trie.hpp"
-#include <utility>
+
 //parser
 /*
  ALBERO -> LEAF | {BAG}
@@ -760,7 +760,7 @@ trie<T> trie<T>::operator+(trie<T> const& rhs) const{
         ret.m_w += rhs.m_w;
     }
 
-    return std::move(ret);
+    return ret;
 }
 
 template <typename T>
