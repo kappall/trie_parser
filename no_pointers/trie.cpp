@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include "trie.hpp"
-
+#include <utility>
 //parser
 /*
  ALBERO -> LEAF | {BAG}
@@ -147,8 +147,14 @@ trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_l(nullptr), m_c(rhs.m_c), m_
 
 }
 
+//distructor
 template <typename T>
-trie<T>::trie(trie<T>&& rhs): m_p(nullptr), m_l(rhs.m_l), m_c(), m_w(rhs.m_w) {
+trie<T>::~trie(){
+    delete m_l;
+}//automatically calls all destructors
+
+template <typename T>
+trie<T>::trie(trie<T>&& rhs): m_p(nullptr), m_l(nullptr), m_c(), m_w(rhs.m_w) {
 
     m_c.m_head = rhs.m_c.m_head;
     rhs.m_c.m_head = nullptr;
@@ -159,11 +165,6 @@ trie<T>::trie(trie<T>&& rhs): m_p(nullptr), m_l(rhs.m_l), m_c(), m_w(rhs.m_w) {
     }
 }
 
-//distructor
-template <typename T>
-trie<T>::~trie(){
-    delete m_l;
-}//automatically calls all destructors
 
 //setters
 template <typename T>
@@ -636,7 +637,6 @@ template <typename T>
 trie<T>& trie<T>::operator=(trie<T> const& rhs){
     if(*this!=rhs){
         //m_p and m_lis not modified
-
         m_w = rhs.m_w;
         m_c = rhs.m_c;
         auto pc = m_c.m_head;
@@ -760,7 +760,7 @@ trie<T> trie<T>::operator+(trie<T> const& rhs) const{
         ret.m_w += rhs.m_w;
     }
 
-    return ret;
+    return std::move(ret);
 }
 
 template <typename T>
