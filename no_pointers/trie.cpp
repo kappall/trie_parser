@@ -135,13 +135,12 @@ template <typename T>
 trie<T>::trie(double w) : m_p(nullptr), m_l(nullptr), m_c(), m_w(w) {}
 
 template <typename T>
-trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_l(nullptr), m_c(rhs.m_c), m_w(rhs.m_w){
+trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_l(nullptr), m_c(), m_w(rhs.m_w){
 
-    if(rhs.m_l)
-        m_l = new T(*rhs.m_l);
-    auto pc = m_c.m_head;
+
+    auto pc = rhs.m_c.m_head;
     while(pc){
-        pc->trie.m_p = this;
+        add_child(pc->trie);
         pc = pc->next;
     }
 
@@ -533,6 +532,7 @@ template <typename T>
 void trie<T>::add_child(trie<T> const& c){
 
     auto node = m_c.create_node(c);
+    node->trie.set_label(c.m_l);
     if(m_c.m_head) {
         if (*(c.m_l) < *(m_c.m_head->trie.m_l)) {//if i need to add it as the head
             m_c.bag_prepend(node);
