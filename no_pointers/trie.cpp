@@ -143,7 +143,6 @@ trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_l(nullptr), m_c(), m_w(rhs.m
         add_child(pc->trie);
         pc = pc->next;
     }
-
 }
 
 //distructor
@@ -532,7 +531,6 @@ template <typename T>
 void trie<T>::add_child(trie<T> const& c){
 
     auto node = m_c.create_node(c);
-    node->trie.set_label(c.m_l);
     if(m_c.m_head) {
         if (*(c.m_l) < *(m_c.m_head->trie.m_l)) {//if i need to add it as the head
             m_c.bag_prepend(node);
@@ -553,6 +551,7 @@ void trie<T>::add_child(trie<T> const& c){
         m_c.bag_prepend(node);
     }
     node->trie.m_p = this;
+    node->trie.set_label(c.m_l);
     m_w = 0.0;//in case it was a leaf
 }
 
@@ -687,7 +686,7 @@ bool trie<T>::operator==(trie<T> const& rhs) const{
     else if((m_c.m_head && !rhs.m_c.m_head) || (!m_c.m_head && rhs.m_c.m_head))
         ret = false;
     else
-        ret = rhs.m_w==m_w;
+        ret = (rhs.m_w==m_w);
 
     return ret;
 }
@@ -784,7 +783,7 @@ void trie<T>::path_compress(){
         }
         if(children==1){
             trie<T> child(((*it).m_c.m_head->trie));
-            T l = *((*it).m_l) + *(child.m_l);
+            T l = *((*it).m_l) + *((*it).m_c.m_head->trie.m_l);
             child.set_label(&l);
             auto temp = it;
             ++it;
