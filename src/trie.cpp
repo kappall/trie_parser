@@ -1,5 +1,3 @@
-//todo: capire perché non funzioni prefix iterator(da capire quale non funzioni)
-
 #include <iostream>
 #include "trie.hpp"
 
@@ -648,7 +646,7 @@ trie<T>& trie<T>::operator=(trie<T> const& rhs){
 //operators
 template <typename T>
 trie<T>& trie<T>::operator=(trie<T>&& rhs){
-    //m_p and m_lis not modified
+    //m_p and m_l are not modified
 
     m_w = rhs.m_w;
     auto temp = m_c.m_head;
