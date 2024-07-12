@@ -111,28 +111,29 @@ public:
         }
         return *this;
     }
-    Node* create_node(Val const& new_child){
-        Node* new_n = new Node(new_child);
+    Node* create_node(Val const& src){
+        Node* new_n = new Node(src);
         return new_n;
     }
 
     void delete_node(Val& n){
-        if(*(n.get_label())!=*(m_head->trie.get_label())) {
-            Node *pc = m_head;
-            while (pc->next && *(n.get_label())!=*(pc->next->trie.get_label())){
-                pc = pc->next;
-            }
-            if(pc->next){
-                Node* temp = pc->next;
-                pc->next = pc->next->next;
+        if(m_head) {
+            if (*(n.get_label()) != *(m_head->trie.get_label())) {
+                Node *pc = m_head;
+                while (pc->next && *(n.get_label()) != *(pc->next->trie.get_label())) {
+                    pc = pc->next;
+                }
+                if (pc->next) {
+                    Node* temp = pc->next;
+                    pc->next = pc->next->next;
+                    delete temp;
+                }
+            } else {
+                Node* temp = m_head;
+                m_head = m_head->next;
                 delete temp;
             }
-        }else{
-            Node* temp = m_head;
-            m_head = m_head->next;
-            delete temp;
         }
-
     }
 
 

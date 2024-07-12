@@ -137,12 +137,8 @@ trie<T>::trie(double w) : m_p(nullptr), m_l(nullptr), m_c(), m_w(w) {}
 template <typename T>
 trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_l(nullptr), m_c(), m_w(rhs.m_w){
 
-
-    auto pc = rhs.m_c.m_head;
-    while(pc){
-        add_child(pc->trie);
-        pc = pc->next;
-    }
+    for(auto& r_pc : rhs.m_c)
+        add_child(r_pc);
 }
 
 //distructor
@@ -637,12 +633,8 @@ trie<T>& trie<T>::operator=(trie<T> const& rhs){
     if(*this!=rhs){
         //m_p and m_lis not modified
         m_w = rhs.m_w;
-        m_c = rhs.m_c;
-        auto pc = m_c.m_head;
-        while(pc){
-            pc->trie.m_p = this;
-            pc = pc->next;
-        }
+        for(auto& r_pc : rhs.m_c)
+            add_child(r_pc);
     }
 
     return *this;
@@ -729,7 +721,10 @@ std::istream& operator>>(std::istream& is, trie<T>& t){
 template <typename T>
 trie<T> trie<T>::operator+(trie<T> const& rhs) const{
     trie<T> ret = *this;
+
     if(m_c.m_head){
+        if(m_l)
+            ret.m_l = new T(*m_l);
         if(rhs.m_c.m_head) {
             for (auto& r_it : rhs.m_c) {
                 bool found = false;
@@ -752,6 +747,8 @@ trie<T> trie<T>::operator+(trie<T> const& rhs) const{
         }
     }else if(rhs.m_c.m_head){
         ret = rhs;
+        if(ret.m_l)
+            ret.m_l = new T(*(ret.m_l));
         for(auto it = ret.begin() ; it != ret.end(); ++it){
             (it).get_leaf().m_w += m_w;
         }
