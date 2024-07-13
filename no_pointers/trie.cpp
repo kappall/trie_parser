@@ -136,9 +136,9 @@ trie<T>::trie(double w) : m_p(nullptr), m_l(nullptr), m_c(), m_w(w) {}
 
 template <typename T>
 trie<T>::trie(trie<T> const& rhs) : m_p(nullptr), m_l(nullptr), m_c(), m_w(rhs.m_w){
-
-    for(auto& r_pc : rhs.m_c)
-        add_child(r_pc);
+    for(auto& it_c : rhs.m_c){
+        add_child(it_c);
+    }
 }
 
 //distructor
@@ -152,11 +152,9 @@ trie<T>::trie(trie<T>&& rhs): m_p(nullptr), m_l(nullptr), m_c(), m_w(rhs.m_w) {
 
     m_c.m_head = rhs.m_c.m_head;
     rhs.m_c.m_head = nullptr;
-    auto pc = m_c.m_head;
-    while(pc){
-        pc->trie.m_p = this;
-        pc = pc->next;
-    }
+
+    for(auto& pc : m_c)
+        pc.m_p = this;
 }
 
 
@@ -384,7 +382,7 @@ typename trie<T>::leaf_iterator trie<T>::begin(){
     if(m_c.m_head) { //if there is any child
         auto pc = m_c.m_head;//first child of this
         while (pc->trie.m_c.m_head)
-            pc = pc->trie.m_c.m_head;//first child of pc
+            pc = pc->trie.m_c.m_head;//first child of pc's trie
         return &(pc->trie);
     }else {
         return nullptr;
@@ -630,11 +628,13 @@ trie<T> const& trie<T>::operator[](std::vector<T> const& v) const{
 
 template <typename T>
 trie<T>& trie<T>::operator=(trie<T> const& rhs){
-    if(*this!=rhs){
+    if(this!=&rhs){
         //m_p and m_lis not modified
         m_w = rhs.m_w;
-        for(auto& r_pc : rhs.m_c)
-            add_child(r_pc);
+        m_c.clear();
+        for(auto& it_c : rhs.m_c){
+            add_child(it_c);
+        }
     }
 
     return *this;
@@ -643,17 +643,15 @@ trie<T>& trie<T>::operator=(trie<T> const& rhs){
 //operators
 template <typename T>
 trie<T>& trie<T>::operator=(trie<T>&& rhs){
-    //m_p and m_lis not modified
+    //m_p and m_l are not modified
 
     m_w = rhs.m_w;
     auto temp = m_c.m_head;
     m_c.m_head = rhs.m_c.m_head;
     rhs.m_c.m_head = temp;
-    auto pc = m_c.m_head;
-    while(pc){
-        pc->trie.m_p = this;
-        pc = pc->next;
-    }
+
+    for(auto& pc : m_c)
+        pc.m_p = this;
 
     return *this;
 }
@@ -702,7 +700,6 @@ std::ostream& operator<<(std::ostream& os, trie<T> const& t){
             }
             if (++it != t.get_children().end())
                 os << ", ";
-
         }
     }else{
         os << t.get_weight() << " children = { ";
@@ -721,7 +718,6 @@ std::istream& operator>>(std::istream& is, trie<T>& t){
 template <typename T>
 trie<T> trie<T>::operator+(trie<T> const& rhs) const{
     trie<T> ret = *this;
-
     if(m_c.m_head){
         if(m_l)
             ret.m_l = new T(*m_l);

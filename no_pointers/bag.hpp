@@ -26,16 +26,6 @@ public:
         m_head = nullptr;
     }
 
-    bag(bag<Val> const& rhs) : m_head(nullptr){
-        if(rhs.m_head) {
-            Node* pc = rhs.m_head;
-            while(pc){
-                push_back(pc->trie);
-                pc = pc->next;
-            }
-        }
-    }
-
     ~bag(){
         while(m_head){
             Node* temp = m_head;
@@ -47,18 +37,6 @@ public:
     void bag_prepend(Node* new_node){
         new_node->next = m_head;
         m_head = new_node;
-    }
-    void push_back(Val const& t){//t è da copiare
-        Node* n = new Node(t);
-        if(!m_head)
-            m_head = n;
-        else {
-            Node* pc = m_head;
-            while (pc->next){
-                pc = pc->next;
-            }
-            pc->next = n;
-        }
     }
 
     bool operator==(bag<Val> const& rhs) const{
@@ -82,35 +60,18 @@ public:
         return !(*this == rhs);
     }
     bag<Val>& operator=(bag<Val>&& rhs){
+        Node* tmp = m_head;
         m_head = rhs.m_head;
-        rhs.m_head = nullptr;
+        rhs.m_head = tmp;
         return *this;
     }
 
-    bag<Val>& operator=(bag<Val> const& rhs){
-        if(*this!=rhs){
-            //free this
-            while(m_head){
-                Node* temp = m_head;
-                m_head = m_head->next;
-                delete temp;
-            }
-
-            if(rhs.m_head){
-                m_head = new Node(rhs.m_head->trie);
-                Node* pc = m_head;
-                Node* pr = rhs.m_head->next;
-                while(pr){
-                    pc->next = new Node(pr->trie);
-                    pc = pc->next;
-                    pr = pr->next;
-                }
-            }
-            else
-                m_head = nullptr;
-        }
-        return *this;
+    void clear(){
+        bag<Val> tmp;
+        tmp.m_head = m_head;
+        m_head = nullptr;
     }
+
     Node* create_node(Val const& src){
         Node* new_n = new Node(src);
         return new_n;
