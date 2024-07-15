@@ -27,11 +27,7 @@ public:
     }
 
     ~bag(){
-        while(m_head){
-            Node* temp = m_head;
-            m_head = m_head->next;
-            delete temp;
-        }
+        clear();
     }
 
     void bag_prepend(Node* new_node){
@@ -67,9 +63,11 @@ public:
     }
 
     void clear(){
-        bag<Val> tmp;
-        tmp.m_head = m_head;
-        m_head = nullptr;
+        while(m_head){
+            Node* temp = m_head;
+            m_head = m_head->next;
+            delete temp;
+        }
     }
 
     Node* create_node(Val const& src){
@@ -166,7 +164,7 @@ public:
         bool operator!=(const_bag_iterator const& rhs) const{
             return m_ptr != rhs.m_ptr;
         }
-        const Val& get_trie(){
+        const Val& get_trie() const{
             return m_ptr->trie;
         }
         const_bag_iterator& operator++(){

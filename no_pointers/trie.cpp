@@ -695,8 +695,7 @@ std::ostream& operator<<(std::ostream& os, trie<T> const& t){
             if (!it->get_children().m_head) {
                 os << it->get_weight() << " children = {}";
             } else {
-                const trie<T>& c = it.get_trie();
-                os << c;
+                os << it.get_trie();
             }
             if (++it != t.get_children().end())
                 os << ", ";
