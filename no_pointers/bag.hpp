@@ -12,13 +12,6 @@ public:
         Node() : trie(), next(nullptr){}
 
         Node(Val const& tr) : trie(tr), next(nullptr){}
-
-        bool operator==(Node const& rhs){
-            return *(trie.get_label()) == *(rhs.trie.get_label());
-        }
-        bool operator!=(Node const& rhs){
-            return *(trie.get_label()) != *(rhs.trie.get_label());;
-        }
     };
     Node* m_head;
 
@@ -45,7 +38,7 @@ public:
             const_bag_iterator it = begin();
             const_bag_iterator r_it = rhs.begin();
             while (ret && it!=end() && r_it!=rhs.end()) {
-                ret = (*it == *r_it);
+                ret = ( (*(*it).get_label()) == *((*r_it).get_label()) ) && (*it == *r_it);
                 ++it;
                 ++r_it;
             }
@@ -59,6 +52,7 @@ public:
         Node* tmp = m_head;
         m_head = rhs.m_head;
         rhs.m_head = tmp;
+
         return *this;
     }
 

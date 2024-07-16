@@ -432,7 +432,8 @@ typename trie<T>::const_leaf_iterator& trie<T>::const_leaf_iterator::operator++(
                 ++(*this);
             }else
                 m_ptr = nullptr;
-        }if(m_ptr && m_ptr->m_c.m_head) {//if it is not a leaf
+        }
+        if(m_ptr && m_ptr->m_c.m_head) {//if it is not a leaf
             while (m_ptr->m_c.m_head) {
                 m_ptr = &(m_ptr->m_c.m_head->trie);
             }
@@ -494,10 +495,9 @@ typename trie<T>::const_leaf_iterator trie<T>::begin() const{
         auto pc = m_c.m_head;//first child of this
         while (pc->trie.m_c.m_head)
             pc = pc->trie.m_c.m_head;//first child of pc
-        return &(pc->trie);
-    }else {
-        return ret;
+        ret = &(pc->trie);
     }
+    return ret;
 }
 template <typename T>
 typename trie<T>::const_leaf_iterator trie<T>::end() const{
@@ -506,12 +506,7 @@ typename trie<T>::const_leaf_iterator trie<T>::end() const{
 
 template <typename T>
 typename trie<T>::const_node_iterator trie<T>::root() const{
-    trie<T>* p = m_p;
     const_node_iterator ret = this;
-    while(p){
-        ret = p;
-        p = p->m_p;
-    }
     return ret;
 }
 
@@ -629,7 +624,7 @@ trie<T> const& trie<T>::operator[](std::vector<T> const& v) const{
 template <typename T>
 trie<T>& trie<T>::operator=(trie<T> const& rhs){
     if(this!=&rhs){
-        //m_p and m_lis not modified
+        //m_p and m_l are not modified
         m_w = rhs.m_w;
         m_c.clear();
         for(auto& it_c : rhs.m_c){
@@ -659,24 +654,10 @@ trie<T>& trie<T>::operator=(trie<T>&& rhs){
 template <typename T>
 bool trie<T>::operator==(trie<T> const& rhs) const{
     bool ret = false;
-    if(m_c.m_head && rhs.m_c.m_head){
-        ret = true;
-        auto it = m_c.begin();
-        auto r_it = rhs.m_c.begin();
-        while (ret && it != m_c.end() && r_it!=rhs.m_c.end()){
-            if(*(it->m_l)==*(r_it->m_l)){
-                ret = (*it == *r_it);
-                ++it;
-                ++r_it;
-            }else {
-                ret = false;
-            }
-        }
-    }
-    else if((m_c.m_head && !rhs.m_c.m_head) || (!m_c.m_head && rhs.m_c.m_head))
-        ret = false;
-    else
+    if(!m_c.m_head && !rhs.m_c.m_head){
         ret = (rhs.m_w==m_w);
+    }else
+        ret = m_c == rhs.m_c;
 
     return ret;
 }
