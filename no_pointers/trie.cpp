@@ -264,7 +264,7 @@ typename trie<T>::node_iterator trie<T>::root(){
 
 //const node iterator
 template <typename T>
-trie<T>::const_node_iterator::const_node_iterator(trie<T> const* ptr) : m_ptr(ptr){}
+trie<T>::const_node_iterator::const_node_iterator(trie<T> const* ptr) : m_ptr(ptr) {}
 
 template <typename T>
 typename trie<T>::const_node_iterator::reference trie<T>::const_node_iterator::operator*() const{
@@ -526,15 +526,21 @@ void trie<T>::add_child(trie<T> const& c){
         }else {
             if (*(c.m_l) == *(m_c.m_head->trie.m_l))
                 throw parser_exception("It is not possible for 2 children with the same father to have the same label");
-            auto pc = m_c.m_head;
-            while (pc->next != nullptr && *(pc->next->trie.m_l) < *(c.m_l)) {
-                pc = pc->next;
-                if (pc->next && *(pc->next->trie.m_l) == *(c.m_l))
-                    throw parser_exception(
-                            "It is not possible for 2 children with the same father to have the same label");
+            else {
+                auto pc = m_c.m_head;
+                bool insert = false;
+                while (pc->next && !insert) {
+                    if (*(pc->next->trie.m_l) == *(c.m_l))
+                        throw parser_exception(
+                                "It is not possible for 2 children with the same father to have the same label");
+                    else if (*(pc->next->trie.m_l) > *(c.m_l))
+                        insert = true;
+                    else
+                        pc = pc->next;
+                }
+                node->next = pc->next;
+                pc->next = node;
             }
-            node->next=pc->next;
-            pc->next = node;
         }
     } else {
         m_c.bag_prepend(node);
