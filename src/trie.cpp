@@ -1,5 +1,3 @@
-#pragma once
-
 // This file contains the template implementation for trie.hpp
 // Include this file only once through trie.hpp
 
