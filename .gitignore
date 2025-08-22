@@ -1,0 +1,7 @@
+/build/
+/trie_app
+*.dSYM/
+/docs/
+/html/
+/latex/
+.vscode

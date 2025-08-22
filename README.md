@@ -20,11 +20,39 @@ A comprehensive C++ implementation of a trie (prefix tree) data structure with a
 ## Project Structure
 
 ```
-├── bag.hpp          # Custom container for storing trie children
-├── trie.hpp         # Trie class declaration
-├── trie.cpp         # Trie class implementation
+├── include/
+│   ├── bag.hpp      # Custom container for storing trie children
+│   └── trie.hpp     # Trie class declaration
+├── src/
+│   └── trie.cpp     # Trie class implementation
 └── README.md        # This file
 ```
+
+## Build Instructions
+
+### CMake
+
+1. Create and navigate to a build directory:
+   ```
+   mkdir build
+   cd build
+   ```
+2. Configure the project for Debug or Release build:
+   ```
+   cmake -DCMAKE_BUILD_TYPE=Debug ..
+   ```
+   or
+   ```
+   cmake -DCMAKE_BUILD_TYPE=Release ..
+   ```
+3. Build the project:
+   ```
+   cmake --build .
+   ```
+4. To enable sanitizers such as AddressSanitizer, add the following flag during configuration:
+   ```
+   cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address" ..
+   ```
 
 ## Usage
 
@@ -89,3 +117,13 @@ Example input format:
 children = { 
     label1 5.0 children = {}, 
     label
+```
+
+## Development Notes
+
+- Sanitizers such as AddressSanitizer are fully supported on Linux.
+- On macOS ARM64 (Apple Silicon), only limited sanitizer support is available; AddressSanitizer and UndefinedBehaviorSanitizer are supported, while ThreadSanitizer is not supported.
+
+## License
+
+MIT License. See `LICENSE` file for details.
